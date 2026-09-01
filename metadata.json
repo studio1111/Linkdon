@@ -1,0 +1,6 @@
+{
+  "name": "لینکدون",
+  "description": "برنامه مدیریت هوشمند دسته‌ها، زیردسته‌ها و آیتم‌ها با طراحی سه‌بعدی شیشه‌ای، تم‌های رنگی گرادیانی، ذخیره‌سازی و پشتیبان‌گیری JSON",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
