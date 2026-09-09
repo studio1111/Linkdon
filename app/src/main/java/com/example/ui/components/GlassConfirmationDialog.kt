@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 
 @Composable
@@ -100,20 +101,24 @@ fun GlassConfirmationDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
+                ExpandableAutoText(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = Color.White,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    collapsedMaxLines = 2,
+                    minFontSize = 12.sp
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
+                ExpandableAutoText(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.75f),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    collapsedMaxLines = 3,
+                    minFontSize = 11.sp
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -133,9 +138,9 @@ fun GlassConfirmationDialog(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(
+                        AutoFitButtonText(
                             text = cancelButtonText,
-                            style = MaterialTheme.typography.labelLarge
+                            color = Color.White
                         )
                     }
 
@@ -151,9 +156,10 @@ fun GlassConfirmationDialog(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(
+                        AutoFitButtonText(
                             text = confirmButtonText,
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.OpenInBrowser
@@ -71,6 +72,7 @@ import com.example.ui.theme.GlassColors
 fun ItemDetailDialog(
     item: VaultItemEntity,
     onEdit: () -> Unit,
+    onMove: () -> Unit = {},
     onDelete: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -182,24 +184,47 @@ fun ItemDetailDialog(
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
+                            // 1. Rating (First)
+                            if (item.rating > 0f) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    StarRatingBar(
+                                        rating = item.rating,
+                                        starSize = 14.dp,
+                                        filledColor = Color(0xFFFBBF24),
+                                        showControls = false
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    RatingBadge(rating = item.rating)
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                            }
+
+                            // 2. Title and Name of item
+                            ExpandableAutoText(
                                 text = item.title,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White
+                                color = Color.White,
+                                collapsedMaxLines = 2,
+                                minFontSize = 12.sp
                             )
+
+                            // 3. Description
+                            if (item.description.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = item.description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.White.copy(alpha = 0.8f)
+                                )
+                            }
+
+                            // 4. Other texts
+                            Spacer(modifier = Modifier.height(3.dp))
                             Text(
                                 text = itemType.titleFa,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = colorItem.highlightColor
                             )
-                            if (item.rating > 0) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                StarRatingBar(
-                                    rating = item.rating,
-                                    starSize = 16.dp,
-                                    filledColor = Color(0xFFFBBF24)
-                                )
-                            }
                         }
                     }
 
@@ -575,8 +600,30 @@ fun ItemDetailDialog(
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text("حذف", style = MaterialTheme.typography.labelMedium)
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            onDismiss()
+                            onMove()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF38BDF8)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DriveFileMove,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        AutoFitButtonText(text = "انتقال", color = Color(0xFF38BDF8))
                     }
 
                     Button(
@@ -599,7 +646,7 @@ fun ItemDetailDialog(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("ویرایش", style = MaterialTheme.typography.labelMedium)
+                        AutoFitButtonText(text = "ویرایش", color = Color.White)
                     }
                 }
             }
@@ -686,7 +733,7 @@ private fun DetailValueBlock(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        Text(
+        ExpandableAutoText(
             text = value.ifEmpty { "(خالی)" },
             style = if (isCode) {
                 MaterialTheme.typography.bodyMedium.copy(
@@ -695,6 +742,8 @@ private fun DetailValueBlock(
                 )
             } else MaterialTheme.typography.bodyMedium,
             color = Color.White,
+            collapsedMaxLines = if (isMultiLine) 4 else 2,
+            minFontSize = 10.sp,
             modifier = Modifier.fillMaxWidth()
         )
     }

@@ -65,6 +65,7 @@ import com.example.ui.theme.GlassColors
 fun AddItemDialog(
     initialItem: VaultItemEntity? = null,
     categoryId: Long,
+    defaultType: ItemType? = null,
     title: String = if (initialItem == null) "افزودن آیتم جدید" else "ویرایش آیتم",
     onConfirm: (item: VaultItemEntity) -> Unit,
     onDismiss: () -> Unit
@@ -73,13 +74,13 @@ fun AddItemDialog(
 
     var selectedType by remember {
         mutableStateOf(
-            if (initialItem != null) ItemType.fromId(initialItem.type) else ItemType.BANK_CARD
+            if (initialItem != null) ItemType.fromId(initialItem.type) else (defaultType ?: ItemType.BANK_CARD)
         )
     }
     var itemTitle by remember { mutableStateOf(initialItem?.title ?: "") }
     var description by remember { mutableStateOf(initialItem?.description ?: "") }
     var selectedColorHex by remember { mutableStateOf(initialItem?.colorHex ?: "#3B82F6") }
-    var rating by remember { mutableIntStateOf(initialItem?.rating ?: 0) }
+    var rating by remember { mutableStateOf(initialItem?.rating ?: 0f) }
 
     // Standard fields
     var primaryValue by remember { mutableStateOf(initialItem?.primaryValue ?: "") }
@@ -842,7 +843,7 @@ fun AddItemDialog(
                         StarRatingBar(
                             rating = rating,
                             onRatingChanged = { rating = it },
-                            starSize = 30.dp
+                            starSize = 18.dp
                         )
                     }
                 }
@@ -871,7 +872,10 @@ fun AddItemDialog(
                             contentColor = Color.White
                         )
                     ) {
-                        Text("انصراف", style = MaterialTheme.typography.labelLarge)
+                        AutoFitButtonText(
+                            text = "انصراف",
+                            color = Color.White
+                        )
                     }
 
                     Button(
@@ -923,9 +927,10 @@ fun AddItemDialog(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(
+                        AutoFitButtonText(
                             text = if (initialItem == null) "ذخیره آیتم" else "بروزرسانی",
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }

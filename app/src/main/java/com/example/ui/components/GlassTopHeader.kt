@@ -98,27 +98,27 @@ fun GlassTopHeader(
             }
         }
 
-        // Left Button 2: List / Grid toggle button (3D Glass)
+        // Side Button 1: Hamburger Menu Button (placed on the same side as the drawer menu)
         GlassmorphicBox(
             modifier = Modifier
                 .size(46.dp)
-                .testTag("toggle_layout_button"),
+                .testTag("hamburger_menu_button"),
             shape = RoundedCornerShape(15.dp),
             backgroundBrush = GlassColors.getGlassButtonBrush(isDark),
             borderBrush = GlassColors.getGlassBorderBrush(isDark),
             elevation = 6.dp,
-            shadowColor = Color(0xFF38BDF8).copy(alpha = 0.35f),
-            onClick = onToggleLayout
+            shadowColor = Color(0xFF8B5CF6).copy(alpha = 0.35f),
+            onClick = onOpenDrawer
         ) {
             Box(
                 modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isGridLayout) Icons.Default.ViewList else Icons.Default.GridView,
-                    contentDescription = if (isGridLayout) "نمایش لیستی" else "نمایش جدولی",
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "منوی کشویی",
                     tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -260,27 +260,27 @@ fun GlassTopHeader(
             }
         }
 
-        // Right Button: 3D Glass Hamburger Menu Button
+        // Other Side Button: List / Grid toggle button (3D Glass)
         GlassmorphicBox(
             modifier = Modifier
                 .size(46.dp)
-                .testTag("hamburger_menu_button"),
+                .testTag("toggle_layout_button"),
             shape = RoundedCornerShape(15.dp),
             backgroundBrush = GlassColors.getGlassButtonBrush(isDark),
             borderBrush = GlassColors.getGlassBorderBrush(isDark),
             elevation = 6.dp,
-            shadowColor = Color(0xFF8B5CF6).copy(alpha = 0.35f),
-            onClick = onOpenDrawer
+            shadowColor = Color(0xFF38BDF8).copy(alpha = 0.35f),
+            onClick = onToggleLayout
         ) {
             Box(
                 modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "منوی کشویی",
+                    imageVector = if (isGridLayout) Icons.Default.ViewList else Icons.Default.GridView,
+                    contentDescription = if (isGridLayout) "نمایش لیستی" else "نمایش جدولی",
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }

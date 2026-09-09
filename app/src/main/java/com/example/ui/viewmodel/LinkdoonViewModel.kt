@@ -3,6 +3,8 @@ package com.example.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.cloud.FirebaseCloudService
+import com.example.data.cloud.SyncResult
 import com.example.data.local.AppDatabase
 import com.example.data.model.CategoryEntity
 import com.example.data.model.FontOption
@@ -38,6 +40,7 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
     private val database = AppDatabase.getDatabase(application, viewModelScope)
     private val repository = LinkdoonRepository(database.categoryDao(), database.vaultItemDao())
     private val prefRepo = PreferenceRepository(application)
+    private val cloudService = FirebaseCloudService(application)
 
     // Preference States
     val theme: StateFlow<ThemeOption> = prefRepo.theme
@@ -46,6 +49,193 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
     val textScale: StateFlow<Float> = prefRepo.textScale
     val isGridLayout: StateFlow<Boolean> = prefRepo.isGridLayout
     val isRtl: StateFlow<Boolean> = prefRepo.isRtl
+
+    // Security & Auth States
+    val userEmail: StateFlow<String> = prefRepo.userEmail
+    val userName: StateFlow<String> = prefRepo.userName
+    val userPassword: StateFlow<String> = prefRepo.userPassword
+    val isOfflineMode: StateFlow<Boolean> = prefRepo.isOfflineMode
+    val appPin: StateFlow<String> = prefRepo.appPin
+    val isSetupCompleted: StateFlow<Boolean> = prefRepo.isSetupCompleted
+
+    // Cloud Sync Status
+    private val _cloudSyncStatus = MutableStateFlow("همگام‌سازی ابری فعال است")
+    val cloudSyncStatus: StateFlow<String> = _cloudSyncStatus.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            seedDefaultCategoriesIfNeeded()
+        }
+    }
+
+    /**
+     * Seeds one default category for each item type (without any items inside).
+     */
+    suspend fun seedDefaultCategoriesIfNeeded() {
+        val existing = repository.getAllCategoriesList()
+        if (existing.isEmpty()) {
+            val defaultCategories = listOf(
+                CategoryEntity(name = "کارت و حساب بانکی", colorHex = "#10B981", orderIndex = 0),
+                CategoryEntity(name = "مخاطب و شماره تماس", colorHex = "#3B82F6", orderIndex = 1),
+                CategoryEntity(name = "کانال و شبکه اجتماعی", colorHex = "#EC4899", orderIndex = 2),
+                CategoryEntity(name = "وب‌سایت / آدرس اینترنتی", colorHex = "#06B6D4", orderIndex = 3),
+                CategoryEntity(name = "ایمیل و رمز عبور", colorHex = "#F59E0B", orderIndex = 4),
+                CategoryEntity(name = "کد امنیتی و احراز هویت", colorHex = "#8B5CF6", orderIndex = 5),
+                CategoryEntity(name = "پرامپت هوش مصنوعی", colorHex = "#6366F1", orderIndex = 6),
+                CategoryEntity(name = "یادداشت و متن مهم", colorHex = "#14B8A6", orderIndex = 7),
+                CategoryEntity(name = "کد و اسنیپت برنامه‌نویسی", colorHex = "#64748B", orderIndex = 8),
+                CategoryEntity(name = "سایر داده‌ها و متن دلخواه", colorHex = "#84CC16", orderIndex = 9)
+            )
+            database.categoryDao().insertCategories(defaultCategories)
+        }
+    }
+
+    // Session Unlock State (in-memory)
+    private val _isAppUnlocked = MutableStateFlow(false)
+    val isAppUnlocked: StateFlow<Boolean> = _isAppUnlocked.asStateFlow()
+
+    fun unlockApp() {
+        _isAppUnlocked.value = true
+    }
+
+    fun lockApp() {
+        _isAppUnlocked.value = false
+    }
+
+    fun setCredentials(username: String, email: String, password: String = "") {
+        prefRepo.setCredentials(username, email, password)
+        _isAppUnlocked.value = true
+        triggerAutoCloudSync()
+    }
+
+    /**
+     * Register account with Cloud/Firebase and initial auto-sync.
+     */
+    fun registerWithCloud(
+        username: String,
+        email: String,
+        password: String,
+        pin: String = "",
+        onResult: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val regResult = cloudService.registerOrUpdateUser(username, email, password)
+            if (regResult.isSuccess) {
+                prefRepo.setCredentials(username, email, password)
+                if (pin.isNotBlank()) {
+                    prefRepo.setAppPin(pin)
+                }
+                _isAppUnlocked.value = true
+                triggerAutoCloudSync()
+                onResult(true, "ثبت‌نام و اتصال به ابر فایربیس با موفقیت انجام شد")
+            } else {
+                onResult(false, regResult.exceptionOrNull()?.message ?: "خطا در ثبت‌نام")
+            }
+        }
+    }
+
+    /**
+     * Login to existing Cloud/Firebase account with deduplication.
+     */
+    fun loginWithCloud(
+        email: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val authResult = cloudService.authenticateUser(email, password)
+            if (authResult.isSuccess) {
+                val profile = authResult.getOrThrow()
+                prefRepo.setCredentials(profile.username, profile.email, profile.password)
+                
+                // Restore vault data with strict deduplication (preventing duplicate categories and items)
+                val syncResult = cloudService.restoreVaultWithDeduplication(
+                    email = profile.email,
+                    categoryDao = database.categoryDao(),
+                    vaultItemDao = database.vaultItemDao()
+                )
+                
+                _isAppUnlocked.value = true
+                _cloudSyncStatus.value = "همگام‌سازی ابری کامل شد"
+                onResult(true, syncResult.message.ifBlank { "ورود با موفقیت انجام شد" })
+            } else {
+                onResult(false, authResult.exceptionOrNull()?.message ?: "اطلاعات ورود نامعتبر است")
+            }
+        }
+    }
+
+    /**
+     * Recover Username and Password using registered Email from Cloud/Firebase.
+     */
+    fun recoverCredentials(
+        email: String,
+        onResult: (Boolean, String, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            val recoverResult = cloudService.recoverCredentialsByEmail(email)
+            if (recoverResult.isSuccess) {
+                val profile = recoverResult.getOrThrow()
+                onResult(true, "نام کاربری: ${profile.username}\nرمز عبور: ${profile.password}", profile.password)
+            } else {
+                onResult(false, recoverResult.exceptionOrNull()?.message ?: "حسابی با این ایمیل یافت نشد", null)
+            }
+        }
+    }
+
+    /**
+     * Log out of current account.
+     */
+    fun logout() {
+        prefRepo.logoutUser()
+        _isAppUnlocked.value = false
+        _currentCategory.value = null
+        _navigationStack.value = emptyList()
+    }
+
+    /**
+     * Trigger auto-cloud sync and auto-export on every change.
+     */
+    fun triggerAutoCloudSync() {
+        val email = userEmail.value
+        val username = userName.value
+        if (email.isBlank() || isOfflineMode.value) return
+
+        viewModelScope.launch {
+            try {
+                val allCats = repository.getAllCategoriesList()
+                val allItems = repository.getAllItemsList()
+                cloudService.autoSaveVaultToCloud(email, username, allCats, allItems)
+                _cloudSyncStatus.value = "ذخیره خودکار ابری انجام شد"
+            } catch (e: Exception) {
+                _cloudSyncStatus.value = "خطا در همگام‌سازی خودکار"
+            }
+        }
+    }
+
+    fun enterOfflineMode() {
+        prefRepo.enterOfflineMode()
+        _isAppUnlocked.value = true
+    }
+
+    fun setAppPin(pin: String) {
+        prefRepo.setAppPin(pin)
+    }
+
+    fun removeAppPin() {
+        prefRepo.removeAppPin()
+    }
+
+    fun clearAllData(onFinished: () -> Unit = {}) {
+        viewModelScope.launch {
+            repository.clearAllData()
+            prefRepo.resetSecurityAccount()
+            seedDefaultCategoriesIfNeeded()
+            _currentCategory.value = null
+            _navigationStack.value = emptyList()
+            _isAppUnlocked.value = false
+            onFinished()
+        }
+    }
 
     // Navigation Stack for hierarchy
     private val _currentCategory = MutableStateFlow<CategoryEntity?>(null)
@@ -242,8 +432,40 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
         return allCategories.value.firstOrNull { it.id == categoryId }?.name ?: ""
     }
 
+    fun getCategoryBreadcrumb(categoryId: Long?): String {
+        if (categoryId == null) return "دسته‌های اصلی (ریشه)"
+        val cats = allCategories.value
+        val map = cats.associateBy { it.id }
+        val path = mutableListOf<String>()
+        var curr: CategoryEntity? = map[categoryId]
+        var depth = 0
+        while (curr != null && depth < 20) {
+            path.add(0, curr.name)
+            curr = curr.parentId?.let { map[it] }
+            depth++
+        }
+        return if (path.isEmpty()) "نامشخص" else path.joinToString(" › ")
+    }
+
+    fun getInvalidTargetCategoryIdsFor(categoryId: Long): Set<Long> {
+        val result = mutableSetOf(categoryId)
+        val cats = allCategories.value
+        val queue = ArrayDeque<Long>()
+        queue.add(categoryId)
+        while (queue.isNotEmpty()) {
+            val curr = queue.removeFirst()
+            val children = cats.filter { it.parentId == curr }.map { it.id }
+            for (childId in children) {
+                if (result.add(childId)) {
+                    queue.add(childId)
+                }
+            }
+        }
+        return result
+    }
+
     // Category CRUD
-    fun addCategory(name: String, colorHex: String, rating: Int = 0, parentId: Long? = _currentCategory.value?.id) {
+    fun addCategory(name: String, colorHex: String, rating: Float = 0f, parentId: Long? = _currentCategory.value?.id) {
         viewModelScope.launch {
             repository.insertCategory(
                 name = name,
@@ -251,18 +473,32 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
                 colorHex = colorHex,
                 rating = rating
             )
+            triggerAutoCloudSync()
         }
     }
 
-    fun updateCategory(id: Long, name: String, colorHex: String, rating: Int = 0) {
+    fun updateCategory(id: Long, name: String, colorHex: String, rating: Float = 0f) {
         viewModelScope.launch {
             repository.updateCategoryDetails(id, name, colorHex, rating)
+            triggerAutoCloudSync()
+        }
+    }
+
+    fun moveCategory(categoryId: Long, newParentId: Long?) {
+        viewModelScope.launch {
+            repository.moveCategory(categoryId, newParentId)
+            if (_currentCategory.value?.id == categoryId) {
+                val updated = repository.getCategoryById(categoryId)
+                _currentCategory.value = updated
+            }
+            triggerAutoCloudSync()
         }
     }
 
     fun deleteCategory(id: Long) {
         viewModelScope.launch {
             repository.deleteCategoryById(id)
+            triggerAutoCloudSync()
         }
     }
 
@@ -274,18 +510,28 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
             } else {
                 repository.updateItem(item)
             }
+            triggerAutoCloudSync()
+        }
+    }
+
+    fun moveItem(itemId: Long, newCategoryId: Long) {
+        viewModelScope.launch {
+            repository.moveItem(itemId, newCategoryId)
+            triggerAutoCloudSync()
         }
     }
 
     fun updateItemColor(id: Long, colorHex: String) {
         viewModelScope.launch {
             repository.updateItemColor(id, colorHex)
+            triggerAutoCloudSync()
         }
     }
 
     fun deleteItem(id: Long) {
         viewModelScope.launch {
             repository.deleteItemById(id)
+            triggerAutoCloudSync()
         }
     }
 

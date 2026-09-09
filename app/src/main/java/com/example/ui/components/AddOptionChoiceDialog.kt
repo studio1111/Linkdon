@@ -79,10 +79,13 @@ fun AddOptionChoiceDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    ExpandableAutoText(
                         text = "افزودن به «$categoryName»",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = Color.White,
+                        collapsedMaxLines = 1,
+                        minFontSize = 12.sp,
+                        modifier = Modifier.weight(1f)
                     )
                     IconButton(
                         onClick = onDismiss,
@@ -98,11 +101,13 @@ fun AddOptionChoiceDialog(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Text(
+                ExpandableAutoText(
                     text = "نوع محتوایی که می‌خواهید ایجاد کنید را انتخاب نمایید:",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.75f),
                     textAlign = TextAlign.Start,
+                    collapsedMaxLines = 2,
+                    minFontSize = 11.sp,
                     modifier = Modifier.fillMaxWidth()
                 )
 

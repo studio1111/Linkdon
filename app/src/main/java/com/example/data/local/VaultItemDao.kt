@@ -39,6 +39,9 @@ interface VaultItemDao {
     @Query("UPDATE vault_items SET colorHex = :colorHex WHERE id = :id")
     suspend fun updateItemColor(id: Long, colorHex: String)
 
+    @Query("UPDATE vault_items SET categoryId = :newCategoryId WHERE id = :id")
+    suspend fun updateItemCategory(id: Long, newCategoryId: Long)
+
     @Delete
     suspend fun deleteItem(item: VaultItemEntity)
 

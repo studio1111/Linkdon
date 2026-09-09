@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MoreVert
@@ -55,6 +56,7 @@ fun CategoryCard(
     isGrid: Boolean = true,
     onClick: () -> Unit,
     onRename: () -> Unit,
+    onMove: () -> Unit = {},
     onChangeColor: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -76,9 +78,9 @@ fun CategoryCard(
         shape = RoundedCornerShape(26.dp),
         backgroundBrush = GlassColors.getGlassCardBrush(category.colorHex, isDark),
         borderBrush = GlassColors.getCardBorderBrush(category.colorHex, isDark),
-        elevation = 8.dp,
-        shadowColor = colorItem.primaryColor.copy(alpha = 0.5f),
-        glowColor = colorItem.secondaryColor,
+        elevation = if (isGrid) 0.dp else 4.dp,
+        shadowColor = if (isGrid) Color.Transparent else colorItem.primaryColor.copy(alpha = 0.35f),
+        glowColor = if (isGrid) null else colorItem.secondaryColor,
         onClick = onClick
     ) {
         if (isGrid) {
@@ -125,6 +127,22 @@ fun CategoryCard(
                             onClick = {
                                 menuExpanded = false
                                 onRename()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = "انتقال دسته",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onMove()
                             }
                         )
                         DropdownMenuItem(
@@ -196,7 +214,7 @@ fun CategoryCard(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
+                    ExpandableAutoText(
                         text = category.name,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
@@ -204,17 +222,13 @@ fun CategoryCard(
                         ),
                         color = Color.White,
                         textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        collapsedMaxLines = 2,
+                        minFontSize = 10.sp
                     )
 
-                    if (category.rating > 0) {
+                    if (category.rating > 0f) {
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "★ ${category.rating}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFFFBBF24)
-                        )
+                        RatingBadge(rating = category.rating)
                     }
                 }
             }
@@ -257,22 +271,18 @@ fun CategoryCard(
                     Spacer(modifier = Modifier.width(14.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        ExpandableAutoText(
                             text = category.name,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             ),
                             color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            collapsedMaxLines = 1,
+                            minFontSize = 10.sp
                         )
-                        if (category.rating > 0) {
+                        if (category.rating > 0f) {
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "★ ${category.rating}",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color(0xFFFBBF24)
-                            )
+                            RatingBadge(rating = category.rating)
                         }
                     }
                 }
@@ -297,10 +307,10 @@ fun CategoryCard(
                     ) {
                         DropdownMenuItem(
                             text = {
-                                Text(
+                                AutoFitButtonText(
                                     text = "تغییر نام دسته",
                                     color = Color.White,
-                                    style = MaterialTheme.typography.bodyMedium
+                                    targetFontSize = 13.sp
                                 )
                             },
                             leadingIcon = {
@@ -313,10 +323,26 @@ fun CategoryCard(
                         )
                         DropdownMenuItem(
                             text = {
-                                Text(
+                                AutoFitButtonText(
+                                    text = "انتقال دسته",
+                                    color = Color.White,
+                                    targetFontSize = 13.sp
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onMove()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                AutoFitButtonText(
                                     text = "تغییر رنگ (۱۶ رنگ)",
                                     color = Color.White,
-                                    style = MaterialTheme.typography.bodyMedium
+                                    targetFontSize = 13.sp
                                 )
                             },
                             leadingIcon = {
@@ -329,10 +355,11 @@ fun CategoryCard(
                         )
                         DropdownMenuItem(
                             text = {
-                                Text(
+                                AutoFitButtonText(
                                     text = "حذف دسته",
                                     color = Color(0xFFEF4444),
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                    fontWeight = FontWeight.Bold,
+                                    targetFontSize = 13.sp
                                 )
                             },
                             leadingIcon = {

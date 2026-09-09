@@ -26,6 +26,6 @@ data class CategoryEntity(
     val name: String,
     val colorHex: String = "#3B82F6",
     val orderIndex: Int = 0,
-    val rating: Int = 0, // 0 to 5 stars
+    val rating: Float = 0f, // 0.0 to 10.0 stars (supports half stars like 8.5)
     val createdAt: Long = System.currentTimeMillis()
 )

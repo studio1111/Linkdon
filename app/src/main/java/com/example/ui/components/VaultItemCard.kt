@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -54,6 +55,7 @@ fun VaultItemCard(
     isGrid: Boolean = true,
     onClick: () -> Unit,
     onEdit: () -> Unit,
+    onMove: () -> Unit = {},
     onChangeColor: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -77,9 +79,9 @@ fun VaultItemCard(
         shape = RoundedCornerShape(26.dp),
         backgroundBrush = GlassColors.getGlassCardBrush(colorHex, isDark),
         borderBrush = GlassColors.getCardBorderBrush(colorHex, isDark),
-        elevation = 8.dp,
-        shadowColor = colorItem.primaryColor.copy(alpha = 0.5f),
-        glowColor = colorItem.secondaryColor,
+        elevation = if (isGrid) 0.dp else 4.dp,
+        shadowColor = if (isGrid) Color.Transparent else colorItem.primaryColor.copy(alpha = 0.35f),
+        glowColor = if (isGrid) null else colorItem.secondaryColor,
         onClick = onClick
     ) {
         if (isGrid) {
@@ -128,6 +130,22 @@ fun VaultItemCard(
                         DropdownMenuItem(
                             text = {
                                 Text(
+                                    text = "انتقال به دسته دیگر",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onMove()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
                                     text = "تغییر رنگ (۱۶ رنگ)",
                                     color = Color.White,
                                     style = MaterialTheme.typography.bodyMedium
@@ -160,17 +178,28 @@ fun VaultItemCard(
                     }
                 }
 
-                // Center Content: Type icon and Title
+                // Center Content: Ordered strictly as requested:
+                // 1. Rating
+                // 2. Title & Name
+                // 3. Description
+                // 4. Other texts
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 18.dp),
+                        .padding(horizontal = 14.dp, vertical = 14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+                    // 1. Rating (first)
+                    if (item.rating > 0f) {
+                        RatingBadge(rating = item.rating)
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                    // Type Icon
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(38.dp)
                             .shadow(6.dp, CircleShape, spotColor = colorItem.secondaryColor)
                             .clip(CircleShape)
                             .background(
@@ -187,13 +216,14 @@ fun VaultItemCard(
                             imageVector = itemType.icon,
                             contentDescription = itemType.titleFa,
                             tint = Color.White,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
+                    // 2. Title and Name of item
+                    ExpandableAutoText(
                         text = item.title,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
@@ -201,37 +231,39 @@ fun VaultItemCard(
                         ),
                         color = Color.White,
                         textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        collapsedMaxLines = 2,
+                        minFontSize = 10.sp
                     )
+
+                    // 3. Description
+                    if (item.description.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = item.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.75f),
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = itemType.titleFa,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colorItem.highlightColor.copy(alpha = 0.9f),
-                            textAlign = TextAlign.Center,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        if (item.rating > 0) {
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "★ ${item.rating}",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color(0xFFFBBF24)
-                            )
-                        }
-                    }
+                    // 4. Other texts (Type, details)
+                    Text(
+                        text = itemType.titleFa,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorItem.highlightColor.copy(alpha = 0.9f),
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         } else {
-            // List layout
+            // List layout: Ordered strictly as requested:
+            // 1. Rating, 2. Title & Name, 3. Description, 4. Other texts
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -269,17 +301,39 @@ fun VaultItemCard(
                     Spacer(modifier = Modifier.width(14.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        // 1. Rating (first)
+                        if (item.rating > 0f) {
+                            RatingBadge(rating = item.rating)
+                            Spacer(modifier = Modifier.height(3.dp))
+                        }
+
+                        // 2. Title and Name
+                        ExpandableAutoText(
                             text = item.title,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            collapsedMaxLines = 1,
+                            minFontSize = 10.sp
                         )
+
+                        // 3. Description
+                        if (item.description.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = item.description,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.7f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
                         Spacer(modifier = Modifier.height(2.dp))
+
+                        // 4. Other texts
                         Text(
                             text = itemType.titleFa,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.labelSmall,
                             color = colorItem.highlightColor.copy(alpha = 0.9f),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -307,10 +361,10 @@ fun VaultItemCard(
                     ) {
                         DropdownMenuItem(
                             text = {
-                                Text(
+                                AutoFitButtonText(
                                     text = "ویرایش آیتم",
                                     color = Color.White,
-                                    style = MaterialTheme.typography.bodyMedium
+                                    targetFontSize = 13.sp
                                 )
                             },
                             leadingIcon = {
@@ -323,10 +377,26 @@ fun VaultItemCard(
                         )
                         DropdownMenuItem(
                             text = {
-                                Text(
+                                AutoFitButtonText(
+                                    text = "انتقال به دسته دیگر",
+                                    color = Color.White,
+                                    targetFontSize = 13.sp
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                onMove()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                AutoFitButtonText(
                                     text = "تغییر رنگ (۱۶ رنگ)",
                                     color = Color.White,
-                                    style = MaterialTheme.typography.bodyMedium
+                                    targetFontSize = 13.sp
                                 )
                             },
                             leadingIcon = {
@@ -339,10 +409,11 @@ fun VaultItemCard(
                         )
                         DropdownMenuItem(
                             text = {
-                                Text(
+                                AutoFitButtonText(
                                     text = "حذف آیتم",
                                     color = Color(0xFFEF4444),
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                    fontWeight = FontWeight.Bold,
+                                    targetFontSize = 13.sp
                                 )
                             },
                             leadingIcon = {

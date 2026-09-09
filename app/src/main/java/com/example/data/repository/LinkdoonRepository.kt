@@ -36,7 +36,7 @@ class LinkdoonRepository(
 
     fun getSubcategoryCount(): Flow<Int> = categoryDao.getSubcategoryCount()
 
-    suspend fun insertCategory(name: String, parentId: Long?, colorHex: String, rating: Int = 0): Long {
+    suspend fun insertCategory(name: String, parentId: Long?, colorHex: String, rating: Float = 0f): Long {
         val entity = CategoryEntity(
             name = name,
             parentId = parentId,
@@ -48,8 +48,11 @@ class LinkdoonRepository(
 
     suspend fun updateCategory(category: CategoryEntity) = categoryDao.updateCategory(category)
 
-    suspend fun updateCategoryDetails(id: Long, name: String, colorHex: String, rating: Int) =
+    suspend fun updateCategoryDetails(id: Long, name: String, colorHex: String, rating: Float) =
         categoryDao.updateCategoryDetails(id, name, colorHex, rating)
+
+    suspend fun moveCategory(id: Long, newParentId: Long?) =
+        categoryDao.updateCategoryParent(id, newParentId)
 
     suspend fun deleteCategoryById(id: Long) = categoryDao.deleteCategoryById(id)
 
@@ -67,7 +70,13 @@ class LinkdoonRepository(
 
     suspend fun updateItemColor(id: Long, colorHex: String) = vaultItemDao.updateItemColor(id, colorHex)
 
+    suspend fun moveItem(id: Long, newCategoryId: Long) =
+        vaultItemDao.updateItemCategory(id, newCategoryId)
+
     suspend fun deleteItemById(id: Long) = vaultItemDao.deleteItemById(id)
+
+    suspend fun getAllCategoriesList(): List<CategoryEntity> = categoryDao.getAllCategoriesList()
+    suspend fun getAllItemsList(): List<VaultItemEntity> = vaultItemDao.getAllItemsList()
 
     // Backup & Restore
     suspend fun exportToJson(): String = withContext(Dispatchers.IO) {
@@ -97,5 +106,10 @@ class LinkdoonRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    suspend fun clearAllData() = withContext(Dispatchers.IO) {
+        vaultItemDao.clearAllItems()
+        categoryDao.clearAllCategories()
     }
 }

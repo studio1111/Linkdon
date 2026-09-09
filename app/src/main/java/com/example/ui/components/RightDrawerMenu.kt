@@ -31,11 +31,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.FormatTextdirectionLToR
 import androidx.compose.material.icons.automirrored.filled.FormatTextdirectionRToL
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FileDownload
@@ -46,9 +49,15 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -105,6 +114,17 @@ fun RightDrawerMenu(
     categoryCount: Int,
     subcategoryCount: Int,
     itemCount: Int,
+    userEmail: String = "",
+    userName: String = "",
+    isOfflineMode: Boolean = false,
+    appPin: String = "",
+    cloudSyncStatus: String = "همگام‌سازی ابری فعال است",
+    onUpdateCredentials: (username: String, email: String) -> Unit = { _, _ -> },
+    onSetPin: (String) -> Unit = {},
+    onRemovePin: () -> Unit = {},
+    onLogout: () -> Unit = {},
+    onSyncNow: () -> Unit = {},
+    onClearAllData: () -> Unit = {},
     onExportJson: (onJsonReady: (String) -> Unit) -> Unit,
     onImportJson: (json: String, onResult: (Boolean, String) -> Unit) -> Unit,
     onCloseDrawer: () -> Unit
@@ -115,6 +135,11 @@ fun RightDrawerMenu(
     var exportedJsonString by remember { mutableStateOf("") }
     var importJsonText by remember { mutableStateOf("") }
     var importStatusMessage by remember { mutableStateOf<String?>(null) }
+
+    // Account & Security edit state in Drawer
+    var showEditAccountDialog by remember { mutableStateOf(false) }
+    var showSetPinDialog by remember { mutableStateOf(false) }
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     // Section collapse / expand states
     var isSortExpanded by remember { mutableStateOf(true) }
@@ -579,16 +604,173 @@ fun RightDrawerMenu(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // SECTION 5: پشتیبان‌گیری و انتقال داده‌ها (Backup & Google Drive)
+            // SECTION 5: پشتیبان‌گیری، امنیت و مدیریت داده‌ها
             DrawerCollapsibleSection(
-                title = "پشتیبان‌گیری و بازیابی",
-                subtitle = "گوگل درایو و فایل JSON",
+                title = "پشتیبان‌گیری، امنیت و حساب",
+                subtitle = if (userName.isNotBlank()) "کاربر: $userName" else if (isOfflineMode) "حالت آفلاین" else "گوگل درایو و امنیت",
                 icon = Icons.Default.CloudUpload,
                 accentColor = currentTheme.accentColor,
                 isExpanded = isBackupExpanded,
                 onToggle = { isBackupExpanded = !isBackupExpanded }
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    // Current Account Info Card
+                    GlassmorphicBox(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        backgroundBrush = Brush.linearGradient(
+                            listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.03f))
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = if (userName.isNotBlank()) Icons.Default.Person else Icons.Default.Security,
+                                        contentDescription = null,
+                                        tint = currentTheme.accentColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = if (userName.isNotBlank()) userName else if (isOfflineMode) "حالت ورود آفلاین" else "حساب ثبت نشده",
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = Color.White
+                                    )
+                                }
+                                Text(
+                                    text = if (appPin.isNotBlank()) "🔒 رمز فعال" else "بدون رمز",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (appPin.isNotBlank()) Color(0xFF34D399) else Color.White.copy(alpha = 0.6f)
+                                )
+                            }
+                            if (userEmail.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = userEmail,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
+
+                    // Firebase Cloud Live Sync Banner & Manual Sync
+                    GlassmorphicBox(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        backgroundBrush = Brush.linearGradient(
+                            listOf(Color(0xFF10B981).copy(alpha = 0.12f), Color(0xFF0F172A).copy(alpha = 0.4f))
+                        ),
+                        borderBrush = Brush.linearGradient(
+                            listOf(Color(0xFF10B981).copy(alpha = 0.35f), Color.Transparent)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(7.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isOfflineMode) Color(0xFFEF4444) else Color(0xFF10B981))
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = if (isOfflineMode) "همگام‌سازی ابری: غیرفعال (آفلاین)" else "همگام‌سازی ابری Firebase:",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = if (isOfflineMode) Color(0xFFFCA5A5) else Color(0xFF6EE7B7)
+                                    )
+                                }
+                            }
+
+                            if (!isOfflineMode) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = cloudSyncStatus,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    maxLines = 1
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFF10B981).copy(alpha = 0.18f))
+                                        .clickable { onSyncNow() }
+                                        .padding(vertical = 6.dp, horizontal = 10.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CloudSync,
+                                        contentDescription = null,
+                                        tint = Color(0xFF6EE7B7),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "همگام‌سازی دستی اکنون",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = Color(0xFF6EE7B7)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Edit Account & Email Button
+                    Button(
+                        onClick = { showEditAccountDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = currentTheme.accentColor.copy(alpha = 0.35f))
+                    ) {
+                        Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (userName.isNotBlank()) "ویرایش نام کاربری و ایمیل" else "احراز هویت با ایمیل و نام کاربری",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
+
+                    // Set / Change / Remove App PIN Button
+                    OutlinedButton(
+                        onClick = { showSetPinDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                    ) {
+                        Icon(
+                            imageVector = if (appPin.isNotBlank()) Icons.Default.Lock else Icons.Default.Key,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = currentTheme.accentColor
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (appPin.isNotBlank()) "تغییر یا حذف رمز عبور (PIN)" else "تنظیم رمز عبور ۴ تا ۸ رقمی",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+
                     // Google Drive / Cloud Share Button
                     Button(
                         onClick = {
@@ -643,6 +825,53 @@ fun RightDrawerMenu(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("بازیابی JSON", style = MaterialTheme.typography.labelSmall)
                         }
+                    }
+
+                    // Logout Button (if registered)
+                    if (userName.isNotBlank() || !isOfflineMode) {
+                        OutlinedButton(
+                            onClick = { onLogout() },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFCA5A5)),
+                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                                brush = Brush.linearGradient(
+                                    listOf(Color(0xFFEF4444).copy(alpha = 0.5f), Color(0xFFEF4444).copy(alpha = 0.2f))
+                                )
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "خروج از حساب",
+                                tint = Color(0xFFFCA5A5),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("خروج از حساب کاربری", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+
+                    // Danger zone: Delete All Data
+                    Button(
+                        onClick = { showDeleteAllDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFEF4444).copy(alpha = 0.25f)
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = "حذف کل اطلاعات",
+                            tint = Color(0xFFF87171),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "حذف کل اطلاعات و بازنشانی",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color(0xFFFCA5A5)
+                        )
                     }
                 }
             }
@@ -743,14 +972,14 @@ fun RightDrawerMenu(
                         ) {
                             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("کپی متن", color = Color(0xFF0F172A), style = MaterialTheme.typography.labelSmall)
+                            AutoFitButtonText("کپی متن", color = Color(0xFF0F172A))
                         }
                         OutlinedButton(
                             onClick = { showExportDialog = false },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("بستن", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                            AutoFitButtonText("بستن", color = Color.White)
                         }
                     }
                 }
@@ -776,10 +1005,12 @@ fun RightDrawerMenu(
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
+                    ExpandableAutoText(
                         text = "بازیابی اطلاعات از فایل JSON",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = Color.White,
+                        collapsedMaxLines = 1,
+                        minFontSize = 12.sp
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
@@ -798,10 +1029,12 @@ fun RightDrawerMenu(
                     )
                     if (importStatusMessage != null) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
+                        ExpandableAutoText(
                             text = importStatusMessage!!,
                             color = Color(0xFF34D399),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            collapsedMaxLines = 2,
+                            minFontSize = 10.sp
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -824,19 +1057,268 @@ fun RightDrawerMenu(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = currentTheme.accentColor)
                         ) {
-                            Text("شروع بازیابی", color = Color(0xFF0F172A), style = MaterialTheme.typography.labelSmall)
+                            AutoFitButtonText("شروع بازیابی", color = Color(0xFF0F172A))
                         }
                         OutlinedButton(
                             onClick = { showImportDialog = false },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("بستن", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                            AutoFitButtonText("بستن", color = Color.White)
                         }
                     }
                 }
             }
         }
+    }
+
+    // Edit Account / Authentication Dialog
+    if (showEditAccountDialog) {
+        Dialog(onDismissRequest = { showEditAccountDialog = false }) {
+            var inputUser by remember { mutableStateOf(userName) }
+            var inputMail by remember { mutableStateOf(userEmail) }
+            var editError by remember { mutableStateOf<String?>(null) }
+
+            GlassmorphicBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                backgroundBrush = Brush.linearGradient(
+                    listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "احراز هویت و حساب اختصاصی",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    OutlinedTextField(
+                        value = inputUser,
+                        onValueChange = {
+                            inputUser = it
+                            editError = null
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("نام کاربری اختصاصی *") },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = currentTheme.accentColor) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = currentTheme.accentColor,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = inputMail,
+                        onValueChange = {
+                            inputMail = it
+                            editError = null
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("آدرس ایمیل معتبر *") },
+                        leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = currentTheme.accentColor) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = currentTheme.accentColor,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    if (editError != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = editError!!, color = Color(0xFFF43F5E), style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                val trimmedUser = inputUser.trim()
+                                val trimmedMail = inputMail.trim()
+                                if (trimmedUser.isBlank()) {
+                                    editError = "نام کاربری نمی‌تواند خالی باشد"
+                                    return@Button
+                                }
+                                if (trimmedMail.isBlank() || !trimmedMail.contains("@")) {
+                                    editError = "لطفاً ایمیل معتبر وارد کنید"
+                                    return@Button
+                                }
+                                onUpdateCredentials(trimmedUser, trimmedMail)
+                                Toast.makeText(context, "اطلاعات حساب با موفقیت ثبت شد", Toast.LENGTH_SHORT).show()
+                                showEditAccountDialog = false
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = currentTheme.accentColor)
+                        ) {
+                            Text("ذخیره حساب", color = Color(0xFF0F172A), style = MaterialTheme.typography.labelSmall)
+                        }
+                        OutlinedButton(
+                            onClick = { showEditAccountDialog = false },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("انصراف", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Set / Change App PIN Dialog
+    if (showSetPinDialog) {
+        Dialog(onDismissRequest = { showSetPinDialog = false }) {
+            var newPin by remember { mutableStateOf("") }
+            var confirmPin by remember { mutableStateOf("") }
+            var pinError by remember { mutableStateOf<String?>(null) }
+
+            GlassmorphicBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                backgroundBrush = Brush.linearGradient(
+                    listOf(Color(0xFF1E293B), Color(0xFF0F172A))
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = if (appPin.isNotBlank()) "تغییر یا حذف رمز ورود" else "تنظیم رمز عبور ۴ تا ۸ رقمی",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "رمز عبور برای قفل گاوصندوق برنامه استفاده می‌شود.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.7f),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    OutlinedTextField(
+                        value = newPin,
+                        onValueChange = {
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) {
+                                newPin = it
+                                pinError = null
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("رمز عبور جدید (۴ تا ۸ رقم)") },
+                        leadingIcon = { Icon(Icons.Default.Key, contentDescription = null, tint = currentTheme.accentColor) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = currentTheme.accentColor,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = confirmPin,
+                        onValueChange = {
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) {
+                                confirmPin = it
+                                pinError = null
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("تکرار رمز عبور جدید") },
+                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = currentTheme.accentColor) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = currentTheme.accentColor,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    if (pinError != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = pinError!!, color = Color(0xFFF43F5E), style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                if (newPin.length < 4 || newPin.length > 8) {
+                                    pinError = "رمز عبور باید بین ۴ تا ۸ رقم باشد"
+                                    return@Button
+                                }
+                                if (newPin != confirmPin) {
+                                    pinError = "تکرار رمز عبور مطابقت ندارد"
+                                    return@Button
+                                }
+                                onSetPin(newPin)
+                                Toast.makeText(context, "رمز عبور با موفقیت فعال شد", Toast.LENGTH_SHORT).show()
+                                showSetPinDialog = false
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = currentTheme.accentColor)
+                        ) {
+                            Text("ذخیره رمز", color = Color(0xFF0F172A), style = MaterialTheme.typography.labelSmall)
+                        }
+                        if (appPin.isNotBlank()) {
+                            Button(
+                                onClick = {
+                                    onRemovePin()
+                                    Toast.makeText(context, "رمز عبور حذف شد", Toast.LENGTH_SHORT).show()
+                                    showSetPinDialog = false
+                                },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
+                            ) {
+                                Text("حذف رمز", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Delete All Data Confirmation Dialog
+    if (showDeleteAllDialog) {
+        DeleteAllDataDialog(
+            currentTheme = currentTheme,
+            expectedUsername = if (userName.isNotBlank()) userName else "حذف",
+            onConfirmDelete = {
+                onClearAllData()
+                showDeleteAllDialog = false
+                onCloseDrawer()
+                Toast.makeText(context, "تمام اطلاعات با موفقیت پاک شدند", Toast.LENGTH_LONG).show()
+            },
+            onDismiss = { showDeleteAllDialog = false }
+        )
     }
 }
 
@@ -907,16 +1389,19 @@ private fun DrawerCollapsibleSection(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        ExpandableAutoText(
                             text = title,
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
+                            color = Color.White,
+                            collapsedMaxLines = 1,
+                            minFontSize = 11.sp
                         )
-                        Text(
+                        ExpandableAutoText(
                             text = subtitle,
                             style = MaterialTheme.typography.labelSmall,
                             color = if (isExpanded) accentColor else Color.White.copy(alpha = 0.6f),
-                            maxLines = 1
+                            collapsedMaxLines = 1,
+                            minFontSize = 9.sp
                         )
                     }
                 }

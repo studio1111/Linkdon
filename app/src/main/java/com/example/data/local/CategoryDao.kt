@@ -46,7 +46,10 @@ interface CategoryDao {
     suspend fun updateCategory(category: CategoryEntity)
 
     @Query("UPDATE categories SET name = :name, colorHex = :colorHex, rating = :rating WHERE id = :id")
-    suspend fun updateCategoryDetails(id: Long, name: String, colorHex: String, rating: Int)
+    suspend fun updateCategoryDetails(id: Long, name: String, colorHex: String, rating: Float)
+
+    @Query("UPDATE categories SET parentId = :newParentId WHERE id = :id")
+    suspend fun updateCategoryParent(id: Long, newParentId: Long?)
 
     @Delete
     suspend fun deleteCategory(category: CategoryEntity)

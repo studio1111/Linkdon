@@ -221,33 +221,33 @@ fun ItemTypePickerDialog(
                                     Spacer(modifier = Modifier.width(12.dp))
 
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = type.titleFa,
-                                                style = MaterialTheme.typography.titleSmall.copy(
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
-                                                ),
-                                                color = Color.White
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            // Category badge
-                                            Box(
-                                                modifier = Modifier
-                                                    .background(
-                                                        if (isSelected) colorItem.secondaryColor.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.1f),
-                                                        RoundedCornerShape(6.dp)
-                                                    )
-                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                                            ) {
-                                                Text(
-                                                    text = type.categoryGroupFa,
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                                    color = if (isSelected) colorItem.highlightColor else Color.White.copy(alpha = 0.7f)
-                                                )
-                                            }
-                                        }
+                                        Text(
+                                            text = type.titleFa,
+                                            style = MaterialTheme.typography.titleSmall.copy(
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
+                                            ),
+                                            color = Color.White
+                                        )
 
                                         Spacer(modifier = Modifier.height(3.dp))
+
+                                        // Category group badge placed underneath the title
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    if (isSelected) colorItem.secondaryColor.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.12f),
+                                                    RoundedCornerShape(6.dp)
+                                                )
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = type.categoryGroupFa,
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                                color = if (isSelected) colorItem.highlightColor else Color.White.copy(alpha = 0.75f)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(4.dp))
 
                                         Text(
                                             text = type.descriptionFa,

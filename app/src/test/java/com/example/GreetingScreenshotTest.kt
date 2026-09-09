@@ -35,7 +35,7 @@ class GreetingScreenshotTest {
         composeTestRule.setContent {
             LinkdoonTheme(
                 themeOption = ThemeOption.DARK,
-                fontOption = FontOption.VAZIRMATN,
+                fontOption = FontOption.DEFAULT,
                 textScale = 1.0f
             ) {
                 CategoryCard(
@@ -44,6 +44,7 @@ class GreetingScreenshotTest {
                     isGrid = true,
                     onClick = {},
                     onRename = {},
+                    onMove = {},
                     onChangeColor = {},
                     onDelete = {}
                 )

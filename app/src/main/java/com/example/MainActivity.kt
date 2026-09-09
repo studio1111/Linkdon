@@ -1,6 +1,7 @@
 package com.example
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -56,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -67,16 +69,21 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.data.model.CategoryEntity
 import com.example.data.model.VaultItemEntity
+import com.example.ui.components.AutoFitButtonText
+import com.example.ui.components.ExpandableAutoText
 import com.example.ui.components.AddCategoryDialog
 import com.example.ui.components.AddItemDialog
 import com.example.ui.components.AddOptionChoiceDialog
 import com.example.ui.components.CategoryCard
 import com.example.ui.components.ColorPickerCarousel
+import com.example.ui.components.AppLockScreen
 import com.example.ui.components.GlassConfirmationDialog
 import com.example.ui.components.GlassFloatingAddButton
 import com.example.ui.components.GlassTopHeader
 import com.example.ui.components.GlassmorphicBox
+import com.example.ui.components.InitialAuthScreen
 import com.example.ui.components.ItemDetailDialog
+import com.example.ui.components.MoveDestinationDialog
 import com.example.ui.components.RightDrawerMenu
 import com.example.ui.components.VaultItemCard
 import com.example.ui.theme.GlassColors
@@ -95,6 +102,11 @@ class MainActivity : ComponentActivity() {
             val textScale by viewModel.textScale.collectAsStateWithLifecycle()
             val isRtl by viewModel.isRtl.collectAsStateWithLifecycle()
 
+            val isSetupCompleted by viewModel.isSetupCompleted.collectAsStateWithLifecycle()
+            val appPin by viewModel.appPin.collectAsStateWithLifecycle()
+            val isAppUnlocked by viewModel.isAppUnlocked.collectAsStateWithLifecycle()
+            val userEmail by viewModel.userEmail.collectAsStateWithLifecycle()
+
             LinkdoonTheme(
                 themeOption = themeOption,
                 fontOption = fontOption,
@@ -106,7 +118,38 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = Color.Transparent
                     ) {
-                        LinkdoonMainApp(viewModel = viewModel)
+                        when {
+                            !isSetupCompleted -> {
+                                InitialAuthScreen(
+                                    currentTheme = themeOption,
+                                    onRegisterUser = { username, email, password, pin, onResult ->
+                                        viewModel.registerWithCloud(username, email, password, pin, onResult)
+                                    },
+                                    onLoginUser = { email, password, onResult ->
+                                        viewModel.loginWithCloud(email, password, onResult)
+                                    },
+                                    onRecoverCredentials = { email, onResult ->
+                                        viewModel.recoverCredentials(email, onResult)
+                                    },
+                                    onEnterOfflineMode = {
+                                        viewModel.enterOfflineMode()
+                                    }
+                                )
+                            }
+                            appPin.isNotBlank() && !isAppUnlocked -> {
+                                AppLockScreen(
+                                    currentTheme = themeOption,
+                                    registeredEmail = userEmail,
+                                    savedPin = appPin,
+                                    onUnlocked = {
+                                        viewModel.unlockApp()
+                                    }
+                                )
+                            }
+                            else -> {
+                                LinkdoonMainApp(viewModel = viewModel)
+                            }
+                        }
                     }
                 }
             }
@@ -119,6 +162,7 @@ fun LinkdoonMainApp(
     viewModel: LinkdoonViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val currentTheme by viewModel.theme.collectAsStateWithLifecycle()
@@ -129,6 +173,7 @@ fun LinkdoonMainApp(
     val isRtl by viewModel.isRtl.collectAsStateWithLifecycle()
 
     val currentCategory by viewModel.currentCategory.collectAsStateWithLifecycle()
+    val allCategories by viewModel.allCategories.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val items by viewModel.items.collectAsStateWithLifecycle()
 
@@ -139,17 +184,25 @@ fun LinkdoonMainApp(
     val subcategoryCount by viewModel.subcategoryCount.collectAsStateWithLifecycle()
     val itemCount by viewModel.itemCount.collectAsStateWithLifecycle()
 
+    val userEmail by viewModel.userEmail.collectAsStateWithLifecycle()
+    val userName by viewModel.userName.collectAsStateWithLifecycle()
+    val isOfflineMode by viewModel.isOfflineMode.collectAsStateWithLifecycle()
+    val appPin by viewModel.appPin.collectAsStateWithLifecycle()
+    val cloudSyncStatus by viewModel.cloudSyncStatus.collectAsStateWithLifecycle()
+
     // Dialog state holders
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var showAddOptionChoiceDialog by remember { mutableStateOf(false) }
     var showAddItemDialog by remember { mutableStateOf(false) }
 
     var categoryToEdit by remember { mutableStateOf<CategoryEntity?>(null) }
+    var categoryToMove by remember { mutableStateOf<CategoryEntity?>(null) }
     var categoryToChangeColor by remember { mutableStateOf<CategoryEntity?>(null) }
     var categoryToDelete by remember { mutableStateOf<CategoryEntity?>(null) }
 
     var itemToDetail by remember { mutableStateOf<VaultItemEntity?>(null) }
     var itemToEdit by remember { mutableStateOf<VaultItemEntity?>(null) }
+    var itemToMove by remember { mutableStateOf<VaultItemEntity?>(null) }
     var itemToChangeColor by remember { mutableStateOf<VaultItemEntity?>(null) }
     var itemToDelete by remember { mutableStateOf<VaultItemEntity?>(null) }
 
@@ -184,6 +237,29 @@ fun LinkdoonMainApp(
                 categoryCount = categoryCount,
                 subcategoryCount = subcategoryCount,
                 itemCount = itemCount,
+                userEmail = userEmail,
+                userName = userName,
+                isOfflineMode = isOfflineMode,
+                appPin = appPin,
+                cloudSyncStatus = cloudSyncStatus,
+                onUpdateCredentials = { username, email ->
+                    viewModel.setCredentials(username, email)
+                },
+                onSetPin = { pin ->
+                    viewModel.setAppPin(pin)
+                },
+                onRemovePin = {
+                    viewModel.removeAppPin()
+                },
+                onLogout = {
+                    viewModel.logout()
+                },
+                onSyncNow = {
+                    viewModel.triggerAutoCloudSync()
+                },
+                onClearAllData = {
+                    viewModel.clearAllData()
+                },
                 onExportJson = { onJsonReady ->
                     viewModel.exportBackup(onJsonReady)
                 },
@@ -253,11 +329,17 @@ fun LinkdoonMainApp(
                             onCategoryClick = { cat ->
                                 viewModel.navigateIntoCategory(cat)
                             },
+                            onCategoryMove = { cat ->
+                                categoryToMove = cat
+                            },
                             onItemClick = { item ->
                                 itemToDetail = item
                             },
                             onItemEdit = { item ->
                                 itemToEdit = item
+                            },
+                            onItemMove = { item ->
+                                itemToMove = item
                             },
                             onItemChangeColor = { item ->
                                 itemToChangeColor = item
@@ -311,6 +393,7 @@ fun LinkdoonMainApp(
                                             isGrid = true,
                                             onClick = { viewModel.navigateIntoCategory(category) },
                                             onRename = { categoryToEdit = category },
+                                            onMove = { categoryToMove = category },
                                             onChangeColor = { categoryToChangeColor = category },
                                             onDelete = { categoryToDelete = category }
                                         )
@@ -324,6 +407,7 @@ fun LinkdoonMainApp(
                                             isGrid = true,
                                             onClick = { itemToDetail = item },
                                             onEdit = { itemToEdit = item },
+                                            onMove = { itemToMove = item },
                                             onChangeColor = { itemToChangeColor = item },
                                             onDelete = { itemToDelete = item }
                                         )
@@ -350,6 +434,7 @@ fun LinkdoonMainApp(
                                             isGrid = false,
                                             onClick = { viewModel.navigateIntoCategory(category) },
                                             onRename = { categoryToEdit = category },
+                                            onMove = { categoryToMove = category },
                                             onChangeColor = { categoryToChangeColor = category },
                                             onDelete = { categoryToDelete = category }
                                         )
@@ -362,6 +447,7 @@ fun LinkdoonMainApp(
                                             isGrid = false,
                                             onClick = { itemToDetail = item },
                                             onEdit = { itemToEdit = item },
+                                            onMove = { itemToMove = item },
                                             onChangeColor = { itemToChangeColor = item },
                                             onDelete = { itemToDelete = item }
                                         )
@@ -428,8 +514,23 @@ fun LinkdoonMainApp(
 
     // 3. Add Item Dialog
     if (showAddItemDialog && currentCategory != null) {
+        val catName = currentCategory!!.name
+        val matchedType = when {
+            catName.contains("بانک") || catName.contains("کارت") -> ItemType.BANK_CARD
+            catName.contains("مخاطب") || catName.contains("تماس") -> ItemType.CONTACT
+            catName.contains("شبکه") || catName.contains("کانال") || catName.contains("رسانه") -> ItemType.SOCIAL_MEDIA
+            catName.contains("وب") || catName.contains("سایت") || catName.contains("اینترنت") -> ItemType.URL
+            catName.contains("ایمیل") || catName.contains("گذرواژه") -> ItemType.EMAIL_PASSWORD
+            catName.contains("امنیت") || catName.contains("احراز") -> ItemType.SECURITY_CODE
+            catName.contains("پرامپت") || catName.contains("هوش مصنوعی") -> ItemType.AI_PROMPT
+            catName.contains("یادداشت") || catName.contains("متن مهم") -> ItemType.NOTE
+            catName.contains("برنامه‌نویسی") || catName.contains("اسنیپت") || catName.contains("کد") -> ItemType.CODE_SNIPPET
+            else -> ItemType.OTHER_TEXT
+        }
+
         AddItemDialog(
             categoryId = currentCategory!!.id,
+            defaultType = matchedType,
             onConfirm = { item ->
                 viewModel.saveItem(item)
                 showAddItemDialog = false
@@ -481,10 +582,12 @@ fun LinkdoonMainApp(
                         .padding(22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
+                    ExpandableAutoText(
                         text = "انتخاب رنگ برای «${cat.name}»",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = Color.White,
+                        collapsedMaxLines = 1,
+                        minFontSize = 12.sp
                     )
                     Spacer(modifier = Modifier.height(18.dp))
                     ColorPickerCarousel(
@@ -502,7 +605,7 @@ fun LinkdoonMainApp(
                             shape = RoundedCornerShape(12.dp),
                             colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                         ) {
-                            Text("انصراف", style = MaterialTheme.typography.labelMedium)
+                            AutoFitButtonText("انصراف", color = Color.White)
                         }
                         androidx.compose.material3.Button(
                             onClick = {
@@ -516,7 +619,7 @@ fun LinkdoonMainApp(
                                 contentColor = Color.White
                             )
                         ) {
-                            Text("تایید رنگ", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                            AutoFitButtonText("تایید رنگ", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -546,6 +649,10 @@ fun LinkdoonMainApp(
             onEdit = {
                 itemToDetail = null
                 itemToEdit = item
+            },
+            onMove = {
+                itemToDetail = null
+                itemToMove = item
             },
             onDelete = {
                 itemToDetail = null
@@ -596,10 +703,12 @@ fun LinkdoonMainApp(
                         .padding(22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
+                    ExpandableAutoText(
                         text = "انتخاب رنگ برای «${item.title}»",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = Color.White,
+                        collapsedMaxLines = 1,
+                        minFontSize = 12.sp
                     )
                     Spacer(modifier = Modifier.height(18.dp))
                     ColorPickerCarousel(
@@ -617,7 +726,7 @@ fun LinkdoonMainApp(
                             shape = RoundedCornerShape(12.dp),
                             colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                         ) {
-                            Text("انصراف", style = MaterialTheme.typography.labelMedium)
+                            AutoFitButtonText("انصراف", color = Color.White)
                         }
                         androidx.compose.material3.Button(
                             onClick = {
@@ -631,7 +740,7 @@ fun LinkdoonMainApp(
                                 contentColor = Color.White
                             )
                         ) {
-                            Text("تایید رنگ", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                            AutoFitButtonText("تایید رنگ", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -652,6 +761,55 @@ fun LinkdoonMainApp(
             onDismiss = { itemToDelete = null }
         )
     }
+
+    // 11. Move Category / Subcategory Dialog
+    if (categoryToMove != null) {
+        val cat = categoryToMove!!
+        val currentBreadcrumb = viewModel.getCategoryBreadcrumb(cat.parentId)
+        val disallowedIds = viewModel.getInvalidTargetCategoryIdsFor(cat.id)
+
+        MoveDestinationDialog(
+            title = "انتقال دسته / زیردسته",
+            targetName = cat.name,
+            currentLocationName = currentBreadcrumb,
+            allCategories = allCategories,
+            isMovingCategory = true,
+            currentParentOrCategoryId = cat.parentId,
+            disallowedCategoryIds = disallowedIds,
+            onConfirmMoveTo = { newParentId ->
+                viewModel.moveCategory(cat.id, newParentId)
+                val destName = viewModel.getCategoryBreadcrumb(newParentId)
+                Toast.makeText(context, "دسته «${cat.name}» با موفقیت به «$destName» منتقل شد", Toast.LENGTH_SHORT).show()
+                categoryToMove = null
+            },
+            onDismiss = { categoryToMove = null }
+        )
+    }
+
+    // 12. Move Item Dialog
+    if (itemToMove != null) {
+        val item = itemToMove!!
+        val currentBreadcrumb = viewModel.getCategoryBreadcrumb(item.categoryId)
+
+        MoveDestinationDialog(
+            title = "انتقال آیتم به دسته‌ای دیگر",
+            targetName = item.title,
+            currentLocationName = currentBreadcrumb,
+            allCategories = allCategories,
+            isMovingCategory = false,
+            currentParentOrCategoryId = item.categoryId,
+            disallowedCategoryIds = emptySet(),
+            onConfirmMoveTo = { newCategoryId ->
+                if (newCategoryId != null) {
+                    viewModel.moveItem(item.id, newCategoryId)
+                    val destName = viewModel.findCategoryName(newCategoryId)
+                    Toast.makeText(context, "«${item.title}» با موفقیت به دسته «$destName» منتقل شد", Toast.LENGTH_SHORT).show()
+                }
+                itemToMove = null
+            },
+            onDismiss = { itemToMove = null }
+        )
+    }
 }
 
 @Composable
@@ -660,8 +818,10 @@ private fun SearchResultsView(
     isGridLayout: Boolean,
     isDark: Boolean,
     onCategoryClick: (CategoryEntity) -> Unit,
+    onCategoryMove: (CategoryEntity) -> Unit = {},
     onItemClick: (VaultItemEntity) -> Unit,
     onItemEdit: (VaultItemEntity) -> Unit,
+    onItemMove: (VaultItemEntity) -> Unit = {},
     onItemChangeColor: (VaultItemEntity) -> Unit,
     onItemDelete: (VaultItemEntity) -> Unit
 ) {
@@ -736,6 +896,7 @@ private fun SearchResultsView(
                         isGrid = false,
                         onClick = { onCategoryClick(cat) },
                         onRename = {},
+                        onMove = { onCategoryMove(cat) },
                         onChangeColor = {},
                         onDelete = {}
                     )
@@ -759,6 +920,7 @@ private fun SearchResultsView(
                         isGrid = false,
                         onClick = { onItemClick(item) },
                         onEdit = { onItemEdit(item) },
+                        onMove = { onItemMove(item) },
                         onChangeColor = { onItemChangeColor(item) },
                         onDelete = { onItemDelete(item) }
                     )

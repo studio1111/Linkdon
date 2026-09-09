@@ -36,15 +36,15 @@ import com.example.ui.theme.GlassColors
 fun AddCategoryDialog(
     initialName: String = "",
     initialColorHex: String = "#3B82F6",
-    initialRating: Int = 0,
+    initialRating: Float = 0f,
     title: String = "افزودن دسته جدید",
     buttonLabel: String = "ذخیره دسته",
-    onConfirm: (name: String, colorHex: String, rating: Int) -> Unit,
+    onConfirm: (name: String, colorHex: String, rating: Float) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf(initialName) }
     var selectedColorHex by remember { mutableStateOf(initialColorHex) }
-    var rating by remember { mutableIntStateOf(initialRating) }
+    var rating by remember { mutableStateOf(initialRating) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val colorItem = GlassColors.getColorItem(selectedColorHex)
 
@@ -137,7 +137,7 @@ fun AddCategoryDialog(
                         StarRatingBar(
                             rating = rating,
                             onRatingChanged = { rating = it },
-                            starSize = 30.dp
+                            starSize = 18.dp
                         )
                     }
                 }
@@ -166,9 +166,9 @@ fun AddCategoryDialog(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(
+                        AutoFitButtonText(
                             text = "انصراف",
-                            style = MaterialTheme.typography.labelLarge
+                            color = Color.White
                         )
                     }
 
@@ -190,9 +190,10 @@ fun AddCategoryDialog(
                             contentColor = Color.White
                         )
                     ) {
-                        Text(
+                        AutoFitButtonText(
                             text = buttonLabel,
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }

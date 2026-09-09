@@ -30,7 +30,7 @@ data class VaultItemEntity(
     val secondaryValue: String = "", // Password, Bank Name, Social Platform, Secondary Phone, Language
     val extraData: String = "", // JSON or encoded data: CVV2, Expiry, Sheba, Owner, Channel link, etc.
     val colorHex: String = "#3B82F6",
-    val rating: Int = 0, // 0 to 5 stars
+    val rating: Float = 0f, // 0.0 to 10.0 stars (supports half stars like 8.5)
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
