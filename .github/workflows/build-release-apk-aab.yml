@@ -40,13 +40,13 @@ jobs:
       - name: Upload Release APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Linkdoon-Release-APK
+          name: Linkdon-Release-APK
           path: app/build/outputs/apk/release/*.apk
 
       - name: Upload Release AAB Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Linkdoon-Release-AAB
+          name: Linkdon-Release-AAB
           path: app/build/outputs/bundle/release/*.aab
 
       - name: Create GitHub Release
@@ -63,6 +63,6 @@ jobs:
           fi
 
           gh release create "$TAG_NAME" "$RELEASE_APK" "$RELEASE_AAB" \
-            --title "Linkdoon Release Build #${{ github.run_number }}" \
+            --title "Linkdon Release Build #${{ github.run_number }}" \
             --notes "Release build generated for commit ${{ github.sha }}." \
             --target "${{ github.sha }}"
