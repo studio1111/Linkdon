@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.cloud.FirebaseCloudService
-import com.example.data.cloud.SyncResult
 import com.example.data.local.AppDatabase
 import com.example.data.model.CategoryEntity
 import com.example.data.model.FontOption
@@ -70,23 +69,29 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
 
     /**
      * Seeds one default category for each item type (without any items inside).
+     * Only inserts categories that do not already exist at the root level.
      */
     suspend fun seedDefaultCategoriesIfNeeded() {
         val existing = repository.getAllCategoriesList()
-        if (existing.isEmpty()) {
-            val defaultCategories = listOf(
-                CategoryEntity(name = "کارت و حساب بانکی", colorHex = "#10B981", orderIndex = 0),
-                CategoryEntity(name = "مخاطب و شماره تماس", colorHex = "#3B82F6", orderIndex = 1),
-                CategoryEntity(name = "کانال و شبکه اجتماعی", colorHex = "#EC4899", orderIndex = 2),
-                CategoryEntity(name = "وب‌سایت / آدرس اینترنتی", colorHex = "#06B6D4", orderIndex = 3),
-                CategoryEntity(name = "ایمیل و رمز عبور", colorHex = "#F59E0B", orderIndex = 4),
-                CategoryEntity(name = "کد امنیتی و احراز هویت", colorHex = "#8B5CF6", orderIndex = 5),
-                CategoryEntity(name = "پرامپت هوش مصنوعی", colorHex = "#6366F1", orderIndex = 6),
-                CategoryEntity(name = "یادداشت و متن مهم", colorHex = "#14B8A6", orderIndex = 7),
-                CategoryEntity(name = "کد و اسنیپت برنامه‌نویسی", colorHex = "#64748B", orderIndex = 8),
-                CategoryEntity(name = "سایر داده‌ها و متن دلخواه", colorHex = "#84CC16", orderIndex = 9)
-            )
-            database.categoryDao().insertCategories(defaultCategories)
+        val defaultCategories = listOf(
+            CategoryEntity(name = "کارت و حساب بانکی", colorHex = "#10B981", orderIndex = 0),
+            CategoryEntity(name = "مخاطب و شماره تماس", colorHex = "#3B82F6", orderIndex = 1),
+            CategoryEntity(name = "کانال و شبکه اجتماعی", colorHex = "#EC4899", orderIndex = 2),
+            CategoryEntity(name = "وب‌سایت / آدرس اینترنتی", colorHex = "#06B6D4", orderIndex = 3),
+            CategoryEntity(name = "ایمیل و رمز عبور", colorHex = "#F59E0B", orderIndex = 4),
+            CategoryEntity(name = "کد امنیتی و احراز هویت", colorHex = "#8B5CF6", orderIndex = 5),
+            CategoryEntity(name = "پرامپت هوش مصنوعی", colorHex = "#6366F1", orderIndex = 6),
+            CategoryEntity(name = "یادداشت و متن مهم", colorHex = "#14B8A6", orderIndex = 7),
+            CategoryEntity(name = "کد و اسنیپت برنامه‌نویسی", colorHex = "#64748B", orderIndex = 8),
+            CategoryEntity(name = "سایر داده‌ها و متن دلخواه", colorHex = "#84CC16", orderIndex = 9)
+        )
+
+        val toInsert = defaultCategories.filter { defaultCat ->
+            existing.none { it.parentId == null && it.name.trim().equals(defaultCat.name.trim(), ignoreCase = true) }
+        }
+
+        if (toInsert.isNotEmpty()) {
+            database.categoryDao().insertCategories(toInsert)
         }
     }
 

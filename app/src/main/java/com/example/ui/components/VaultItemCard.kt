@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -136,7 +136,7 @@ fun VaultItemCard(
                                 )
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
+                                Icon(Icons.AutoMirrored.Filled.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
                             },
                             onClick = {
                                 menuExpanded = false
@@ -384,7 +384,7 @@ fun VaultItemCard(
                                 )
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
+                                Icon(Icons.AutoMirrored.Filled.DriveFileMove, contentDescription = null, tint = Color(0xFF38BDF8))
                             },
                             onClick = {
                                 menuExpanded = false

@@ -8,7 +8,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,17 +24,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -184,18 +181,15 @@ fun ItemDetailDialog(
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            // 1. Rating (First)
+                            // 1. Rating (First) - Numerical rating strictly below stars
                             if (item.rating > 0f) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    StarRatingBar(
-                                        rating = item.rating,
-                                        starSize = 14.dp,
-                                        filledColor = Color(0xFFFBBF24),
-                                        showControls = false
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    RatingBadge(rating = item.rating)
-                                }
+                                StarRatingBar(
+                                    rating = item.rating,
+                                    starSize = 14.dp,
+                                    filledColor = Color(0xFFFBBF24),
+                                    showControls = false,
+                                    showNumberBelow = true
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
                             }
 
@@ -618,7 +612,7 @@ fun ItemDetailDialog(
                         )
                     ) {
                         Icon(
-                            imageVector = Icons.Default.DriveFileMove,
+                            imageVector = Icons.AutoMirrored.Filled.DriveFileMove,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )

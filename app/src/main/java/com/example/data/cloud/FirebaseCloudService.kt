@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.data.local.CategoryDao
 import com.example.data.local.VaultItemDao
-import com.example.data.model.BackupData
 import com.example.data.model.CategoryEntity
 import com.example.data.model.VaultItemEntity
 import com.squareup.moshi.Moshi
