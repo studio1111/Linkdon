@@ -39,7 +39,7 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
     private val database = AppDatabase.getDatabase(application, viewModelScope)
     private val repository = LinkdoonRepository(database.categoryDao(), database.vaultItemDao())
     private val prefRepo = PreferenceRepository(application)
-    private val cloudService = FirebaseCloudService(application)
+    private val cloudService = FirebaseCloudService()
 
     // Preference States
     val theme: StateFlow<ThemeOption> = prefRepo.theme
