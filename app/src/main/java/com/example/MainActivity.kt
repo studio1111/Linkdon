@@ -353,6 +353,7 @@ fun LinkdoonMainApp(
                         EmptyStateView(
                             isRoot = currentCategory == null,
                             categoryName = currentCategory?.name ?: "",
+                            isDark = currentTheme.isDark,
                             onAddCategory = {
                                 if (currentCategory == null) {
                                     showAddCategoryDialog = true
@@ -467,6 +468,7 @@ fun LinkdoonMainApp(
                     .padding(start = 24.dp, bottom = 28.dp)
             ) {
                 GlassFloatingAddButton(
+                    isDark = currentTheme.isDark,
                     onClick = {
                         if (currentCategory == null) {
                             // On Main Screen: Add Category directly
@@ -488,6 +490,7 @@ fun LinkdoonMainApp(
         AddCategoryDialog(
             title = if (currentCategory == null) "افزودن دسته جدید" else "افزودن زیردسته به «${currentCategory?.name}»",
             buttonLabel = "ایجاد دسته",
+            isDark = currentTheme.isDark,
             onConfirm = { name, colorHex, rating ->
                 viewModel.addCategory(name, colorHex, rating)
                 showAddCategoryDialog = false
@@ -500,6 +503,7 @@ fun LinkdoonMainApp(
     if (showAddOptionChoiceDialog) {
         AddOptionChoiceDialog(
             categoryName = currentCategory?.name ?: "",
+            isDark = currentTheme.isDark,
             onChooseSubcategory = {
                 showAddOptionChoiceDialog = false
                 showAddCategoryDialog = true
@@ -531,6 +535,7 @@ fun LinkdoonMainApp(
         AddItemDialog(
             categoryId = currentCategory!!.id,
             defaultType = matchedType,
+            isDark = currentTheme.isDark,
             onConfirm = { item ->
                 viewModel.saveItem(item)
                 showAddItemDialog = false
@@ -547,6 +552,7 @@ fun LinkdoonMainApp(
             initialRating = categoryToEdit!!.rating,
             title = "تغییر مشخصات دسته",
             buttonLabel = "بروزرسانی",
+            isDark = currentTheme.isDark,
             onConfirm = { name, colorHex, rating ->
                 viewModel.updateCategory(categoryToEdit!!.id, name, colorHex, rating)
                 categoryToEdit = null
@@ -567,14 +573,10 @@ fun LinkdoonMainApp(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(26.dp),
-                backgroundBrush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF1E293B).copy(alpha = 0.98f),
-                        Color(0xFF0F172A).copy(alpha = 0.98f),
-                        colorItem.primaryColor.copy(alpha = 0.40f)
-                    )
-                ),
-                elevation = 16.dp
+                backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = currentTheme.isDark, accentColor = colorItem.secondaryColor),
+                borderBrush = GlassColors.getOpaqueBorderBrush(isDark = currentTheme.isDark, accentColor = colorItem.highlightColor),
+                elevation = 16.dp,
+                shadowColor = if (currentTheme.isDark) colorItem.secondaryColor.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.12f)
             ) {
                 Column(
                     modifier = Modifier
@@ -585,7 +587,7 @@ fun LinkdoonMainApp(
                     ExpandableAutoText(
                         text = "انتخاب رنگ برای «${cat.name}»",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White,
+                        color = if (currentTheme.isDark) Color.White else Color(0xFF111827),
                         collapsedMaxLines = 1,
                         minFontSize = 12.sp
                     )
@@ -603,9 +605,11 @@ fun LinkdoonMainApp(
                             onClick = { categoryToChangeColor = null },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                contentColor = if (currentTheme.isDark) Color.White else Color(0xFF111827)
+                            )
                         ) {
-                            AutoFitButtonText("انصراف", color = Color.White)
+                            AutoFitButtonText("انصراف", color = if (currentTheme.isDark) Color.White else Color(0xFF111827))
                         }
                         androidx.compose.material3.Button(
                             onClick = {
@@ -633,6 +637,7 @@ fun LinkdoonMainApp(
         GlassConfirmationDialog(
             title = "آیا از حذف دسته «${cat.name}» مطمئنید؟",
             message = "با حذف این دسته، تمامی زیردسته‌ها و آیتم‌های داخل آن به طور کامل پاک خواهند شد.",
+            isDark = currentTheme.isDark,
             onConfirm = {
                 viewModel.deleteCategory(cat.id)
                 categoryToDelete = null
@@ -646,6 +651,7 @@ fun LinkdoonMainApp(
         val item = itemToDetail!!
         ItemDetailDialog(
             item = item,
+            isDark = currentTheme.isDark,
             onEdit = {
                 itemToDetail = null
                 itemToEdit = item
@@ -668,6 +674,7 @@ fun LinkdoonMainApp(
         AddItemDialog(
             initialItem = item,
             categoryId = item.categoryId,
+            isDark = currentTheme.isDark,
             onConfirm = { updated ->
                 viewModel.saveItem(updated)
                 itemToEdit = null
@@ -688,14 +695,10 @@ fun LinkdoonMainApp(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(26.dp),
-                backgroundBrush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF1E293B).copy(alpha = 0.98f),
-                        Color(0xFF0F172A).copy(alpha = 0.98f),
-                        colorItem.primaryColor.copy(alpha = 0.40f)
-                    )
-                ),
-                elevation = 16.dp
+                backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = currentTheme.isDark, accentColor = colorItem.secondaryColor),
+                borderBrush = GlassColors.getOpaqueBorderBrush(isDark = currentTheme.isDark, accentColor = colorItem.highlightColor),
+                elevation = 16.dp,
+                shadowColor = if (currentTheme.isDark) colorItem.secondaryColor.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.12f)
             ) {
                 Column(
                     modifier = Modifier
@@ -706,7 +709,7 @@ fun LinkdoonMainApp(
                     ExpandableAutoText(
                         text = "انتخاب رنگ برای «${item.title}»",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White,
+                        color = if (currentTheme.isDark) Color.White else Color(0xFF111827),
                         collapsedMaxLines = 1,
                         minFontSize = 12.sp
                     )
@@ -724,9 +727,11 @@ fun LinkdoonMainApp(
                             onClick = { itemToChangeColor = null },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                contentColor = if (currentTheme.isDark) Color.White else Color(0xFF111827)
+                            )
                         ) {
-                            AutoFitButtonText("انصراف", color = Color.White)
+                            AutoFitButtonText("انصراف", color = if (currentTheme.isDark) Color.White else Color(0xFF111827))
                         }
                         androidx.compose.material3.Button(
                             onClick = {
@@ -754,6 +759,7 @@ fun LinkdoonMainApp(
         GlassConfirmationDialog(
             title = "حذف آیتم «${item.title}»",
             message = "آیا مطمئن هستید که می‌خواهید این آیتم را از لیست حذف کنید؟",
+            isDark = currentTheme.isDark,
             onConfirm = {
                 viewModel.deleteItem(item.id)
                 itemToDelete = null
@@ -776,6 +782,7 @@ fun LinkdoonMainApp(
             isMovingCategory = true,
             currentParentOrCategoryId = cat.parentId,
             disallowedCategoryIds = disallowedIds,
+            isDark = currentTheme.isDark,
             onConfirmMoveTo = { newParentId ->
                 viewModel.moveCategory(cat.id, newParentId)
                 val destName = viewModel.getCategoryBreadcrumb(newParentId)
@@ -799,6 +806,7 @@ fun LinkdoonMainApp(
             isMovingCategory = false,
             currentParentOrCategoryId = item.categoryId,
             disallowedCategoryIds = emptySet(),
+            isDark = currentTheme.isDark,
             onConfirmMoveTo = { newCategoryId ->
                 if (newCategoryId != null) {
                     viewModel.moveItem(item.id, newCategoryId)
@@ -836,9 +844,15 @@ private fun SearchResultsView(
             GlassmorphicBox(
                 modifier = Modifier.size(80.dp),
                 shape = CircleShape,
-                backgroundBrush = Brush.linearGradient(
-                    colors = listOf(Color(0xFFEF4444).copy(alpha = 0.35f), Color(0xFF7F1D1D).copy(alpha = 0.45f))
-                ),
+                backgroundBrush = if (isDark) {
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFFEF4444).copy(alpha = 0.35f), Color(0xFF7F1D1D).copy(alpha = 0.45f))
+                    )
+                } else {
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFFF87171), Color(0xFFDC2626))
+                    )
+                },
                 elevation = 8.dp,
                 contentAlignment = Alignment.Center
             ) {
@@ -853,14 +867,14 @@ private fun SearchResultsView(
             Text(
                 text = "نتیجه‌ای یافت نشد",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Color.White,
+                color = if (isDark) Color.White else Color(0xFF111827),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = "هیچ دسته، کارت بانکی، مخاطب یا آیتمی با عبارت «${searchResults.query}» پیدا نشد.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.7f),
+                color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
                 textAlign = TextAlign.Center
             )
         }
@@ -876,7 +890,7 @@ private fun SearchResultsView(
                 Text(
                     text = "نتایج جستجو برای «${searchResults.query}» (${searchResults.totalCount} مورد یافت شد):",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color(0xFF38BDF8)
+                    color = if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)
                 )
             }
 
@@ -885,7 +899,7 @@ private fun SearchResultsView(
                     Text(
                         text = "دسته‌بندی‌ها (${searchResults.categories.size}):",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF374151)
                     )
                 }
 
@@ -909,7 +923,7 @@ private fun SearchResultsView(
                     Text(
                         text = "آیتم‌ها، کارت‌ها و داده‌ها (${searchResults.items.size}):",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF374151)
                     )
                 }
 
@@ -934,6 +948,7 @@ private fun SearchResultsView(
 private fun EmptyStateView(
     isRoot: Boolean,
     categoryName: String,
+    isDark: Boolean = true,
     onAddCategory: () -> Unit
 ) {
     Column(
@@ -946,15 +961,30 @@ private fun EmptyStateView(
         GlassmorphicBox(
             modifier = Modifier.size(90.dp),
             shape = CircleShape,
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF38BDF8).copy(alpha = 0.35f),
-                    Color(0xFF1E40AF).copy(alpha = 0.45f)
+            backgroundBrush = if (isDark) {
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF38BDF8).copy(alpha = 0.35f),
+                        Color(0xFF1E40AF).copy(alpha = 0.45f)
+                    )
                 )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(Color.White.copy(alpha = 0.6f), Color.Transparent)
-            ),
+            } else {
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF3B82F6),
+                        Color(0xFF1D4ED8)
+                    )
+                )
+            },
+            borderBrush = if (isDark) {
+                Brush.linearGradient(
+                    colors = listOf(Color.White.copy(alpha = 0.6f), Color.Transparent)
+                )
+            } else {
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF93C5FD), Color.Transparent)
+                )
+            },
             elevation = 10.dp,
             contentAlignment = Alignment.Center
         ) {
@@ -971,7 +1001,7 @@ private fun EmptyStateView(
         Text(
             text = if (isRoot) "هنوز دسته‌ای ایجاد نشده است" else "این دسته در حال حاضر خالی است",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = Color.White,
+            color = if (isDark) Color.White else Color(0xFF111827),
             textAlign = TextAlign.Center
         )
 
@@ -979,12 +1009,12 @@ private fun EmptyStateView(
 
         Text(
             text = if (isRoot) {
-                "برای ساخت اولین دسته شیشه‌ای، دکمه آبی رنگ «+» در پایین صفحه را لمس کنید."
+                "برای ساخت اولین دسته، دکمه آبی رنگ «+» در پایین صفحه را لمس کنید."
             } else {
                 "دکمه «+» در پایین صفحه را بزنید تا زیردسته یا آیتم‌های جدید به «$categoryName» اضافه شود."
             },
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White.copy(alpha = 0.7f),
+            color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp)
         )

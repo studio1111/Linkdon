@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.data.model.ThemeOption
+import com.example.ui.theme.GlassColors
 
 /**
  * Advanced & Professional First-Time Setup & Authentication Screen for Linkdoon.
@@ -120,22 +121,32 @@ fun InitialAuthScreen(
     var isLoading by remember { mutableStateOf(false) }
     var showOfflineWarningDialog by remember { mutableStateOf(false) }
     var showRecoveryDialog by remember { mutableStateOf(false) }
+    val isDark = currentTheme.isDark
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF080D1A)
+        color = if (isDark) Color(0xFF080D1A) else Color(0xFFFAF7F2)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF070B14),
-                            Color(0xFF0F172A),
-                            currentTheme.startGradient.copy(alpha = 0.38f),
-                            Color(0xFF070B14)
-                        )
+                        colors = if (isDark) {
+                            listOf(
+                                Color(0xFF070B14),
+                                Color(0xFF0F172A),
+                                currentTheme.startGradient.copy(alpha = 0.38f),
+                                Color(0xFF070B14)
+                            )
+                        } else {
+                            listOf(
+                                Color(0xFFFFFFFF),
+                                Color(0xFFFAF7F2),
+                                Color(0xFFF3ECE0),
+                                Color(0xFFEFE7D8)
+                            )
+                        }
                     )
                 ),
             contentAlignment = Alignment.Center
@@ -184,7 +195,7 @@ fun InitialAuthScreen(
                 Text(
                     text = "گاوصندوق ابری و هوشمند لینکدون",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-                    color = Color.White,
+                    color = if (isDark) Color.White else Color(0xFF111827),
                     textAlign = TextAlign.Center
                 )
 
@@ -193,7 +204,7 @@ fun InitialAuthScreen(
                 Text(
                     text = "مدیریت امن حساب و همگام‌سازی خودکار ابری",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.75f),
+                    color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF4B5563),
                     textAlign = TextAlign.Center
                 )
 
@@ -203,21 +214,10 @@ fun InitialAuthScreen(
                 GlassmorphicBox(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(28.dp),
-                    backgroundBrush = Brush.linearGradient(
-                        listOf(
-                            Color(0xFF1E293B).copy(alpha = 0.94f),
-                            Color(0xFF0F172A).copy(alpha = 0.97f)
-                        )
-                    ),
-                    borderBrush = Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.35f),
-                            currentTheme.accentColor.copy(alpha = 0.45f),
-                            Color.White.copy(alpha = 0.1f)
-                        )
-                    ),
-                    elevation = 12.dp,
-                    shadowColor = currentTheme.accentColor.copy(alpha = 0.25f)
+                    backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = currentTheme.accentColor),
+                    borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = currentTheme.accentColor),
+                    elevation = if (isDark) 12.dp else 4.dp,
+                    shadowColor = if (isDark) currentTheme.accentColor.copy(alpha = 0.25f) else Color.Black.copy(alpha = 0.08f)
                 ) {
                     Column(
                         modifier = Modifier
@@ -230,7 +230,12 @@ fun InitialAuthScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Color.White.copy(alpha = 0.06f))
+                                .background(if (isDark) Color.White.copy(alpha = 0.06f) else Color(0xFFEDE5D8))
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFD8CEBF),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
                                 .padding(4.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
@@ -240,7 +245,7 @@ fun InitialAuthScreen(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(
-                                        if (selectedTab == 0) currentTheme.accentColor.copy(alpha = 0.32f)
+                                        if (selectedTab == 0) (if (isDark) currentTheme.accentColor.copy(alpha = 0.32f) else currentTheme.accentColor.copy(alpha = 0.20f))
                                         else Color.Transparent
                                     )
                                     .border(
@@ -261,7 +266,7 @@ fun InitialAuthScreen(
                                     imageVector = Icons.Default.AppRegistration,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    tint = if (selectedTab == 0) Color.White else Color.White.copy(alpha = 0.6f)
+                                    tint = if (selectedTab == 0) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280))
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
@@ -269,7 +274,7 @@ fun InitialAuthScreen(
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal
                                     ),
-                                    color = if (selectedTab == 0) Color.White else Color.White.copy(alpha = 0.6f)
+                                    color = if (selectedTab == 0) (if (isDark) Color.White else Color(0xFF111827)) else (if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280))
                                 )
                             }
 
@@ -279,7 +284,7 @@ fun InitialAuthScreen(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(
-                                        if (selectedTab == 1) currentTheme.accentColor.copy(alpha = 0.32f)
+                                        if (selectedTab == 1) (if (isDark) currentTheme.accentColor.copy(alpha = 0.32f) else currentTheme.accentColor.copy(alpha = 0.20f))
                                         else Color.Transparent
                                     )
                                     .border(
@@ -300,7 +305,7 @@ fun InitialAuthScreen(
                                     imageVector = Icons.AutoMirrored.Filled.Login,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    tint = if (selectedTab == 1) Color.White else Color.White.copy(alpha = 0.6f)
+                                    tint = if (selectedTab == 1) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280))
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
@@ -308,7 +313,7 @@ fun InitialAuthScreen(
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
                                     ),
-                                    color = if (selectedTab == 1) Color.White else Color.White.copy(alpha = 0.6f)
+                                    color = if (selectedTab == 1) (if (isDark) Color.White else Color(0xFF111827)) else (if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280))
                                 )
                             }
                         }
@@ -333,7 +338,7 @@ fun InitialAuthScreen(
                                     Icon(Icons.Default.Person, contentDescription = null, tint = currentTheme.accentColor)
                                 },
                                 singleLine = true,
-                                colors = authTextFieldColors(currentTheme.accentColor),
+                                colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                 shape = RoundedCornerShape(14.dp)
                             )
 
@@ -356,7 +361,7 @@ fun InitialAuthScreen(
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                                 singleLine = true,
-                                colors = authTextFieldColors(currentTheme.accentColor),
+                                colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                 shape = RoundedCornerShape(14.dp)
                             )
 
@@ -382,14 +387,14 @@ fun InitialAuthScreen(
                                         Icon(
                                             imageVector = if (regPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                             contentDescription = "نمایش رمز عبور",
-                                            tint = Color.White.copy(alpha = 0.6f)
+                                            tint = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280)
                                         )
                                     }
                                 },
                                 visualTransformation = if (regPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                 singleLine = true,
-                                colors = authTextFieldColors(currentTheme.accentColor),
+                                colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                 shape = RoundedCornerShape(14.dp)
                             )
 
@@ -415,14 +420,14 @@ fun InitialAuthScreen(
                                         Icon(
                                             imageVector = if (regConfirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                             contentDescription = "نمایش تکرار رمز عبور",
-                                            tint = Color.White.copy(alpha = 0.6f)
+                                            tint = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280)
                                         )
                                     }
                                 },
                                 visualTransformation = if (regConfirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                 singleLine = true,
-                                colors = authTextFieldColors(currentTheme.accentColor),
+                                colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                 shape = RoundedCornerShape(14.dp)
                             )
 
@@ -450,14 +455,14 @@ fun InitialAuthScreen(
                                         Icon(
                                             imageVector = if (regPinVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                             contentDescription = "نمایش پین",
-                                            tint = Color.White.copy(alpha = 0.6f)
+                                            tint = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280)
                                         )
                                     }
                                 },
                                 visualTransformation = if (regPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                                 singleLine = true,
-                                colors = authTextFieldColors(currentTheme.accentColor),
+                                colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                 shape = RoundedCornerShape(14.dp)
                             )
 
@@ -481,7 +486,7 @@ fun InitialAuthScreen(
                                     visualTransformation = if (regPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                                     singleLine = true,
-                                    colors = authTextFieldColors(currentTheme.accentColor),
+                                    colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                     shape = RoundedCornerShape(14.dp)
                                 )
                             }
@@ -493,25 +498,25 @@ fun InitialAuthScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color.White.copy(alpha = 0.04f))
-                                    .border(0.5.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(14.dp))
+                                    .background(if (isDark) Color.White.copy(alpha = 0.04f) else Color(0xFFEDE5D8))
+                                    .border(0.5.dp, if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFD8CEBF), RoundedCornerShape(14.dp))
                                     .padding(10.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("ذخیره‌سازی و همگام‌سازی خودکار در پایگاه ابری فایربیس", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
+                                    Text("ذخیره‌سازی و همگام‌سازی خودکار در پایگاه ابری فایربیس", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF1F2937))
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("خروجی و بازیابی خودکار هوشمند بدون ایجاد فایل تکراری", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
+                                    Text("خروجی و بازیابی خودکار هوشمند بدون ایجاد فایل تکراری", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF1F2937))
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("قابلیت بازیابی نام کاربری و رمز عبور از طریق ایمیل", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
+                                    Text("قابلیت بازیابی نام کاربری و رمز عبور از طریق ایمیل", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF1F2937))
                                 }
                             }
 
@@ -610,7 +615,7 @@ fun InitialAuthScreen(
                             Text(
                                 text = "ورود به حساب و بازیابی خودکار اطلاعات از فضای ابری",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.White.copy(alpha = 0.7f),
+                                color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
                                 textAlign = TextAlign.Center
                             )
 
@@ -633,7 +638,7 @@ fun InitialAuthScreen(
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                                 singleLine = true,
-                                colors = authTextFieldColors(currentTheme.accentColor),
+                                colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                 shape = RoundedCornerShape(14.dp)
                             )
 
@@ -658,14 +663,14 @@ fun InitialAuthScreen(
                                         Icon(
                                             imageVector = if (loginPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                             contentDescription = "نمایش رمز عبور",
-                                            tint = Color.White.copy(alpha = 0.6f)
+                                            tint = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280)
                                         )
                                     }
                                 },
                                 visualTransformation = if (loginPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                 singleLine = true,
-                                colors = authTextFieldColors(currentTheme.accentColor),
+                                colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                                 shape = RoundedCornerShape(14.dp)
                             )
 
@@ -759,10 +764,14 @@ fun InitialAuthScreen(
                         .height(48.dp)
                         .testTag("btn_offline_entry"),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White.copy(alpha = 0.85f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF1F2937)),
                     border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
                         brush = Brush.linearGradient(
-                            listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.1f))
+                            if (isDark) {
+                                listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.1f))
+                            } else {
+                                listOf(Color(0xFF9CA3AF), Color(0xFFD1D5DB))
+                            }
                         )
                     )
                 ) {
@@ -805,12 +814,8 @@ fun InitialAuthScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                backgroundBrush = Brush.linearGradient(
-                    listOf(Color(0xFF1E1B2E), Color(0xFF0F172A))
-                ),
-                borderBrush = Brush.linearGradient(
-                    listOf(Color(0xFFF59E0B), Color(0xFFEF4444))
-                )
+                backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = Color(0xFFEF4444)),
+                borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = Color(0xFFEF4444))
             ) {
                 Column(
                     modifier = Modifier
@@ -838,7 +843,7 @@ fun InitialAuthScreen(
                     Text(
                         text = "هشدار مهم ورود در حالت آفلاین",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White,
+                        color = if (isDark) Color.White else Color(0xFF111827),
                         textAlign = TextAlign.Center
                     )
 
@@ -847,7 +852,7 @@ fun InitialAuthScreen(
                     Text(
                         text = "در صورت انتخاب ورود آفلاین، اطلاعات شما تنها روی حافظه موقت دستگاه نگهداری می‌شود و قابلیت همگام‌سازی ابری فایربیس و بازیابی خودکار داده‌ها فعال نخواهد بود.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.85f),
+                        color = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF374151),
                         textAlign = TextAlign.Center,
                         lineHeight = 20.sp
                     )
@@ -876,7 +881,7 @@ fun InitialAuthScreen(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("بازگشت و ثبت‌نام", style = MaterialTheme.typography.labelMedium, color = Color.White)
+                            Text("بازگشت و ثبت‌نام", style = MaterialTheme.typography.labelMedium, color = if (isDark) Color.White else Color(0xFF111827))
                         }
                     }
                 }
@@ -898,6 +903,7 @@ fun AccountCredentialsRecoveryDialog(
     onUseRecovered: (email: String, password: String) -> Unit
 ) {
     val context = LocalContext.current
+    val isDark = currentTheme.isDark
     var emailInput by remember { mutableStateOf(initialEmail) }
     var recoveredUsername by remember { mutableStateOf<String?>(null) }
     var recoveredPassword by remember { mutableStateOf<String?>(null) }
@@ -917,13 +923,9 @@ fun AccountCredentialsRecoveryDialog(
                 .fillMaxWidth()
                 .padding(12.dp),
             shape = RoundedCornerShape(26.dp),
-            backgroundBrush = Brush.linearGradient(
-                listOf(Color(0xFF1E293B).copy(alpha = 0.98f), Color(0xFF0F172A).copy(alpha = 0.98f))
-            ),
-            borderBrush = Brush.linearGradient(
-                listOf(currentTheme.accentColor.copy(alpha = 0.7f), Color.White.copy(alpha = 0.3f))
-            ),
-            elevation = 16.dp
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = currentTheme.accentColor),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = currentTheme.accentColor),
+            elevation = if (isDark) 16.dp else 4.dp
         ) {
             Column(
                 modifier = Modifier
@@ -951,7 +953,7 @@ fun AccountCredentialsRecoveryDialog(
                 Text(
                     text = "بازیابی نام کاربری و رمز عبور",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White
+                    color = if (isDark) Color.White else Color(0xFF111827)
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -959,7 +961,7 @@ fun AccountCredentialsRecoveryDialog(
                 Text(
                     text = "ایمیل ثبت شده خود در Firebase را وارد کنید تا اطلاعات کاربری استعلام شود",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.7f),
+                    color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
                     textAlign = TextAlign.Center
                 )
 
@@ -981,7 +983,7 @@ fun AccountCredentialsRecoveryDialog(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true,
-                    colors = authTextFieldColors(currentTheme.accentColor),
+                    colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                     shape = RoundedCornerShape(12.dp)
                 )
 
@@ -1001,15 +1003,15 @@ fun AccountCredentialsRecoveryDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF10B981).copy(alpha = 0.12f))
-                            .border(1.dp, Color(0xFF10B981).copy(alpha = 0.35f), RoundedCornerShape(14.dp))
+                            .background(if (isDark) Color(0xFF10B981).copy(alpha = 0.12f) else Color(0xFFECFDF5))
+                            .border(1.dp, Color(0xFF10B981).copy(alpha = if (isDark) 0.35f else 0.5f), RoundedCornerShape(14.dp))
                             .padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "اطلاعات حساب با موفقیت از Firebase بازیابی شد:",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF6EE7B7)
+                            color = if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857)
                         )
 
                         Row(
@@ -1020,10 +1022,10 @@ fun AccountCredentialsRecoveryDialog(
                             Text(
                                 text = "نام کاربری: $recoveredUsername",
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White
+                                color = if (isDark) Color.White else Color(0xFF111827)
                             )
                             IconButton(onClick = { copyToClipboard("نام کاربری", recoveredUsername!!) }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "کپی نام کاربری", tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = "کپی نام کاربری", tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563), modifier = Modifier.size(16.dp))
                             }
                         }
 
@@ -1035,10 +1037,10 @@ fun AccountCredentialsRecoveryDialog(
                             Text(
                                 text = "رمز عبور: $recoveredPassword",
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White
+                                color = if (isDark) Color.White else Color(0xFF111827)
                             )
                             IconButton(onClick = { copyToClipboard("رمز عبور", recoveredPassword!!) }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "کپی رمز عبور", tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = "کپی رمز عبور", tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563), modifier = Modifier.size(16.dp))
                             }
                         }
                     }
@@ -1110,7 +1112,7 @@ fun AccountCredentialsRecoveryDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("بستن", style = MaterialTheme.typography.labelMedium, color = Color.White)
+                    Text("بستن", style = MaterialTheme.typography.labelMedium, color = if (isDark) Color.White else Color(0xFF111827))
                 }
             }
         }
@@ -1129,25 +1131,36 @@ fun AppLockScreen(
     onUnlocked: () -> Unit
 ) {
     val context = LocalContext.current
+    val isDark = currentTheme.isDark
     var enteredPin by remember { mutableStateOf("") }
     var errorPin by remember { mutableStateOf(false) }
     var showRecoveryDialog by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF0B1120)
+        color = if (isDark) Color(0xFF0B1120) else Color(0xFFFAF7F2)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF0B1120),
-                            Color(0xFF0F172A),
-                            currentTheme.startGradient.copy(alpha = 0.5f)
+                    if (isDark) {
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFF0B1120),
+                                Color(0xFF0F172A),
+                                currentTheme.startGradient.copy(alpha = 0.5f)
+                            )
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFFFAF7F2),
+                                Color(0xFFF3ECE0),
+                                Color(0xFFFAF7F2)
+                            )
+                        )
+                    }
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -1183,7 +1196,7 @@ fun AppLockScreen(
                 Text(
                     text = "گاوصندوق لینکدون قفل است",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White
+                    color = if (isDark) Color.White else Color(0xFF111827)
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -1191,7 +1204,7 @@ fun AppLockScreen(
                 Text(
                     text = "رمز عبور عددی (۴ تا ۸ رقم) خود را وارد کنید",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.7f)
+                    color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -1212,12 +1225,12 @@ fun AppLockScreen(
                                     when {
                                         errorPin -> Color(0xFFF43F5E)
                                         isFilled -> currentTheme.accentColor
-                                        else -> Color.White.copy(alpha = 0.2f)
+                                        else -> if (isDark) Color.White.copy(alpha = 0.2f) else Color(0xFFD1D5DB)
                                     }
                                 )
                                 .border(
                                     width = 1.dp,
-                                    color = if (isFilled) currentTheme.accentColor else Color.White.copy(alpha = 0.4f),
+                                    color = if (isFilled) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.4f) else Color(0xFF9CA3AF)),
                                     shape = CircleShape
                                 )
                         )
@@ -1257,10 +1270,10 @@ fun AppLockScreen(
                                     modifier = Modifier
                                         .size(64.dp)
                                         .clip(CircleShape)
-                                        .background(Color.White.copy(alpha = 0.08f))
+                                        .background(if (isDark) Color.White.copy(alpha = 0.08f) else Color(0xFFFFFFFF))
                                         .border(
                                             width = 1.dp,
-                                            color = Color.White.copy(alpha = 0.15f),
+                                            color = if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFD1D5DB),
                                             shape = CircleShape
                                         )
                                         .clickable {
@@ -1292,7 +1305,7 @@ fun AppLockScreen(
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 22.sp
                                         ),
-                                        color = Color.White
+                                        color = if (isDark) Color.White else Color(0xFF111827)
                                     )
                                 }
                             }
@@ -1329,9 +1342,8 @@ fun AppLockScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                backgroundBrush = Brush.linearGradient(
-                    listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                )
+                backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = currentTheme.accentColor),
+                borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = currentTheme.accentColor)
             ) {
                 var emailInput by remember { mutableStateOf("") }
                 var recoveryMessage by remember { mutableStateOf<String?>(null) }
@@ -1346,7 +1358,7 @@ fun AppLockScreen(
                     Text(
                         text = "بازیابی رمز عبور از طریق ایمیل",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = if (isDark) Color.White else Color(0xFF111827)
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -1354,7 +1366,7 @@ fun AppLockScreen(
                     Text(
                         text = "برای دریافت راهنمای بازنشانی، لطفاً آدرس ایمیل ثبت‌شده خود را وارد کنید:",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.75f),
+                        color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF4B5563),
                         textAlign = TextAlign.Center
                     )
 
@@ -1370,7 +1382,7 @@ fun AppLockScreen(
                         label = { Text("ایمیل ثبت شده") },
                         placeholder = { Text(registeredEmail) },
                         singleLine = true,
-                        colors = authTextFieldColors(currentTheme.accentColor),
+                        colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
                         shape = RoundedCornerShape(12.dp)
                     )
 
@@ -1412,7 +1424,7 @@ fun AppLockScreen(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("بستن", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                            Text("بستن", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White else Color(0xFF111827))
                         }
                     }
                 }
@@ -1587,12 +1599,14 @@ fun DeleteAllDataDialog(
 }
 
 @Composable
-private fun authTextFieldColors(accentColor: Color) = OutlinedTextFieldDefaults.colors(
+private fun authTextFieldColors(accentColor: Color, isDark: Boolean = true) = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = accentColor,
-    unfocusedBorderColor = Color.White.copy(alpha = 0.25f),
+    unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFD1D5DB),
     focusedLabelColor = accentColor,
-    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-    focusedTextColor = Color.White,
-    unfocusedTextColor = Color.White,
-    cursorColor = accentColor
+    unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
+    focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+    unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+    cursorColor = accentColor,
+    focusedPlaceholderColor = if (isDark) Color.White.copy(alpha = 0.4f) else Color(0xFF9CA3AF),
+    unfocusedPlaceholderColor = if (isDark) Color.White.copy(alpha = 0.4f) else Color(0xFF9CA3AF)
 )
