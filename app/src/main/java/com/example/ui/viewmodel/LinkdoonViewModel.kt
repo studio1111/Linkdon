@@ -151,7 +151,7 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
             val authResult = cloudService.authenticateUser(email, password)
             if (authResult.isSuccess) {
                 val profile = authResult.getOrThrow()
-                prefRepo.setCredentials(profile.username, profile.email, profile.password)
+                prefRepo.setCredentials(profile.username, profile.email, password)
                 
                 // Restore vault data with strict deduplication (preventing duplicate categories and items)
                 val syncResult = cloudService.restoreVaultWithDeduplication(
