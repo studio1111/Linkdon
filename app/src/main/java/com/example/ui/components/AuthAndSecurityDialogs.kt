@@ -85,7 +85,7 @@ import com.example.ui.theme.GlassColors
  * 2. Dedicated Email, Username, Password, and Password Confirmation
  * 3. Fast Unlock PIN (4-8 digits, optional)
  * 4. Automatic Cloud Sync & Output to Firebase with intelligent deduplication
- * 5. Account Recovery (Username & Password recovery via Email from Firebase)
+ * 5. Account Recovery (Password-reset email via Firebase Authentication)
  * 6. Direct Offline Mode entry with safety warning
  */
 @Composable
@@ -378,7 +378,7 @@ fun InitialAuthScreen(
                                     .fillMaxWidth()
                                     .testTag("setup_password_input"),
                                 label = { Text("رمز عبور حساب کاربری *") },
-                                placeholder = { Text("حداقل ۴ نویسه") },
+                                placeholder = { Text("حداقل ۶ نویسه") },
                                 leadingIcon = {
                                     Icon(Icons.Default.Lock, contentDescription = null, tint = currentTheme.accentColor)
                                 },
@@ -516,7 +516,7 @@ fun InitialAuthScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("قابلیت بازیابی نام کاربری و رمز عبور از طریق ایمیل", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF1F2937))
+                                    Text("بازیابی رمز عبور با لینک امن از طریق ایمیل", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF1F2937))
                                 }
                             }
 
@@ -558,8 +558,8 @@ fun InitialAuthScreen(
                                         errorMessage = "لطفاً آدرس ایمیل معتبر وارد کنید"
                                         return@Button
                                     }
-                                    if (pass.length < 4) {
-                                        errorMessage = "رمز عبور باید حداقل ۴ نویسه باشد"
+                                    if (pass.length < 6) {
+                                        errorMessage = "رمز عبور باید حداقل ۶ نویسه باشد"
                                         return@Button
                                     }
                                     if (pass != confirmPass) {
@@ -745,7 +745,7 @@ fun InitialAuthScreen(
                                 Icon(Icons.Default.LockReset, contentDescription = null, tint = currentTheme.accentColor, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "فراموشی رمز عبور یا نام کاربری؟ (بازیابی با ایمیل)",
+                                    text = "فراموشی رمز عبور؟ (ارسال لینک بازیابی به ایمیل)",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = currentTheme.accentColor
                                 )
@@ -790,19 +790,13 @@ fun InitialAuthScreen(
         }
     }
 
-    // Account Credentials Recovery Dialog (Username & Password Recovery via Email)
+    // Account Password Recovery Dialog (sends a Firebase reset-password email)
     if (showRecoveryDialog) {
         AccountCredentialsRecoveryDialog(
             currentTheme = currentTheme,
             initialEmail = loginEmail.ifBlank { regEmail },
             onRecover = onRecoverCredentials,
-            onDismiss = { showRecoveryDialog = false },
-            onUseRecovered = { recoveredEmail, recoveredPassword ->
-                loginEmail = recoveredEmail
-                loginPassword = recoveredPassword
-                selectedTab = 1
-                showRecoveryDialog = false
-            }
+            onDismiss = { showRecoveryDialog = false }
         )
     }
 
@@ -891,31 +885,26 @@ fun InitialAuthScreen(
 }
 
 /**
- * Dedicated Account Recovery Dialog:
- * Queries Firebase for Username & Password associated with the entered Email.
+ * Dedicated Password Recovery Dialog.
+ *
+ * With real Firebase Authentication, the password itself is never
+ * retrievable (it's stored hashed by Google). This dialog simply asks
+ * for the account email and triggers a password-reset email through
+ * Firebase — the user then follows the link Firebase sends to set a
+ * brand-new password.
  */
 @Composable
 fun AccountCredentialsRecoveryDialog(
     currentTheme: ThemeOption,
     initialEmail: String = "",
     onRecover: (email: String, onResult: (Boolean, String, String?) -> Unit) -> Unit,
-    onDismiss: () -> Unit,
-    onUseRecovered: (email: String, password: String) -> Unit
+    onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
     val isDark = currentTheme.isDark
     var emailInput by remember { mutableStateOf(initialEmail) }
-    var recoveredUsername by remember { mutableStateOf<String?>(null) }
-    var recoveredPassword by remember { mutableStateOf<String?>(null) }
+    var successMessage by remember { mutableStateOf<String?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-
-    fun copyToClipboard(label: String, text: String) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText(label, text)
-        clipboard.setPrimaryClip(clip)
-        Toast.makeText(context, "$label در حافظه کپی شد", Toast.LENGTH_SHORT).show()
-    }
 
     Dialog(onDismissRequest = onDismiss) {
         GlassmorphicBox(
@@ -951,7 +940,7 @@ fun AccountCredentialsRecoveryDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "بازیابی نام کاربری و رمز عبور",
+                    text = "بازیابی رمز عبور",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = if (isDark) Color.White else Color(0xFF111827)
                 )
@@ -959,7 +948,7 @@ fun AccountCredentialsRecoveryDialog(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "ایمیل ثبت شده خود در Firebase را وارد کنید تا اطلاعات کاربری استعلام شود",
+                    text = "ایمیل ثبت شده خود را وارد کنید تا لینک بازیابی رمز عبور برایتان ارسال شود",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
                     textAlign = TextAlign.Center
@@ -972,6 +961,7 @@ fun AccountCredentialsRecoveryDialog(
                     onValueChange = {
                         emailInput = it
                         errorMessage = null
+                        successMessage = null
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -997,7 +987,7 @@ fun AccountCredentialsRecoveryDialog(
                     )
                 }
 
-                if (recoveredUsername != null && recoveredPassword != null) {
+                if (successMessage != null) {
                     Spacer(modifier = Modifier.height(14.dp))
                     Column(
                         modifier = Modifier
@@ -1006,62 +996,24 @@ fun AccountCredentialsRecoveryDialog(
                             .background(if (isDark) Color(0xFF10B981).copy(alpha = 0.12f) else Color(0xFFECFDF5))
                             .border(1.dp, Color(0xFF10B981).copy(alpha = if (isDark) 0.35f else 0.5f), RoundedCornerShape(14.dp))
                             .padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "اطلاعات حساب با موفقیت از Firebase بازیابی شد:",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857)
+                            text = successMessage!!,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                            color = if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857),
+                            textAlign = TextAlign.Center
                         )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "نام کاربری: $recoveredUsername",
-                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                color = if (isDark) Color.White else Color(0xFF111827)
-                            )
-                            IconButton(onClick = { copyToClipboard("نام کاربری", recoveredUsername!!) }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "کپی نام کاربری", tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563), modifier = Modifier.size(16.dp))
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "رمز عبور: $recoveredPassword",
-                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                color = if (isDark) Color.White else Color(0xFF111827)
-                            )
-                            IconButton(onClick = { copyToClipboard("رمز عبور", recoveredPassword!!) }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "کپی رمز عبور", tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563), modifier = Modifier.size(16.dp))
-                            }
-                        }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    Button(
-                        onClick = {
-                            onUseRecovered(emailInput.trim(), recoveredPassword!!)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(46.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = currentTheme.accentColor)
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(
-                            text = "ورود مستقیم با این اطلاعات",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF0F172A)
-                        )
+                        Text("متوجه شدم، بستن", style = MaterialTheme.typography.labelMedium, color = if (isDark) Color.White else Color(0xFF111827))
                     }
                 } else {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -1075,13 +1027,12 @@ fun AccountCredentialsRecoveryDialog(
                             }
                             isLoading = true
                             errorMessage = null
-                            onRecover(trimmed) { success, userOrMsg, pass ->
+                            onRecover(trimmed) { success, message, _ ->
                                 isLoading = false
-                                if (success && pass != null) {
-                                    recoveredUsername = userOrMsg
-                                    recoveredPassword = pass
+                                if (success) {
+                                    successMessage = message
                                 } else {
-                                    errorMessage = userOrMsg
+                                    errorMessage = message
                                 }
                             }
                         },
@@ -1097,22 +1048,22 @@ fun AccountCredentialsRecoveryDialog(
                             CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color(0xFF0F172A), strokeWidth = 2.dp)
                         } else {
                             Text(
-                                text = "استعلام و بازیابی حساب",
+                                text = "ارسال لینک بازیابی",
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                 color = Color(0xFF0F172A)
                             )
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("بستن", style = MaterialTheme.typography.labelMedium, color = if (isDark) Color.White else Color(0xFF111827))
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("بستن", style = MaterialTheme.typography.labelMedium, color = if (isDark) Color.White else Color(0xFF111827))
+                    }
                 }
             }
         }
@@ -1121,7 +1072,8 @@ fun AccountCredentialsRecoveryDialog(
 
 /**
  * Lock Screen when App PIN is enabled.
- * Provides PIN keypad and "Forgot Password" email recovery flow.
+ * Provides PIN keypad and a "Forgot PIN" flow that sends a Firebase
+ * password-reset email as a fallback path back into the account.
  */
 @Composable
 fun AppLockScreen(
@@ -1130,11 +1082,9 @@ fun AppLockScreen(
     savedPin: String,
     onUnlocked: () -> Unit
 ) {
-    val context = LocalContext.current
     val isDark = currentTheme.isDark
     var enteredPin by remember { mutableStateOf("") }
     var errorPin by remember { mutableStateOf(false) }
-    var showRecoveryDialog by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -1309,122 +1259,6 @@ fun AppLockScreen(
                                     )
                                 }
                             }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Forgot Password / Recovery button
-                if (registeredEmail.isNotBlank()) {
-                    OutlinedButton(
-                        onClick = { showRecoveryDialog = true },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = currentTheme.accentColor)
-                    ) {
-                        Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "فراموشی رمز عبور و بازیابی با ایمیل",
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    // Password Recovery Dialog via Email
-    if (showRecoveryDialog) {
-        Dialog(onDismissRequest = { showRecoveryDialog = false }) {
-            GlassmorphicBox(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(24.dp),
-                backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = currentTheme.accentColor),
-                borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = currentTheme.accentColor)
-            ) {
-                var emailInput by remember { mutableStateOf("") }
-                var recoveryMessage by remember { mutableStateOf<String?>(null) }
-                var isSuccess by remember { mutableStateOf(false) }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "بازیابی رمز عبور از طریق ایمیل",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = if (isDark) Color.White else Color(0xFF111827)
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(
-                        text = "برای دریافت راهنمای بازنشانی، لطفاً آدرس ایمیل ثبت‌شده خود را وارد کنید:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF4B5563),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    OutlinedTextField(
-                        value = emailInput,
-                        onValueChange = {
-                            emailInput = it
-                            recoveryMessage = null
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("ایمیل ثبت شده") },
-                        placeholder = { Text(registeredEmail) },
-                        singleLine = true,
-                        colors = authTextFieldColors(currentTheme.accentColor, isDark = isDark),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-
-                    if (recoveryMessage != null) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = recoveryMessage!!,
-                            color = if (isSuccess) Color(0xFF34D399) else Color(0xFFF43F5E),
-                            style = MaterialTheme.typography.bodySmall,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                if (emailInput.trim().equals(registeredEmail.trim(), ignoreCase = true)) {
-                                    isSuccess = true
-                                    recoveryMessage = "تایید شد! رمز عبور شما: $savedPin"
-                                } else {
-                                    isSuccess = false
-                                    recoveryMessage = "ایمیل وارد شده با ایمیل ثبت شده مطابقت ندارد"
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = currentTheme.accentColor)
-                        ) {
-                            Text("تایید و بازیابی", style = MaterialTheme.typography.labelSmall, color = Color(0xFF0F172A))
-                        }
-
-                        OutlinedButton(
-                            onClick = { showRecoveryDialog = false },
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("بستن", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White else Color(0xFF111827))
                         }
                     }
                 }
