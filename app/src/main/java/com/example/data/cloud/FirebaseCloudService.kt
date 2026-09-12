@@ -4,6 +4,7 @@ import com.example.data.local.CategoryDao
 import com.example.data.local.VaultItemDao
 import com.example.data.model.CategoryEntity
 import com.example.data.model.VaultItemEntity
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
@@ -11,18 +12,14 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 /**
- * Account credentials model stored in Cloud/Firebase storage.
- * Enables full account recovery of username & password by email.
- *
- * NOTE: Storing raw passwords in Firestore is not secure. Prefer using
- * Firebase Authentication (email/password) instead of storing passwords
- * yourself. This class keeps the same shape as before to avoid breaking
- * the rest of the app, but consider migrating to FirebaseAuth later.
+ * Account profile stored in Firestore ("users" collection).
+ * The password itself is never stored here — it lives only inside
+ * Firebase Authentication, hashed, and is never readable by anyone,
+ * including this app's own code.
  */
 data class CloudUserProfile(
     val username: String = "",
     val email: String = "",
-    val password: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -58,13 +55,15 @@ data class SyncResult(
  */
 class FirebaseCloudService {
 
+    private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
     private val usersCollection = db.collection("users")
     private val vaultsCollection = db.collection("vaults")
 
     /**
-     * Save/Update user profile in Firestore ("users" collection).
-     * Document ID = normalized email, so lookups are O(1) and unambiguous.
+     * Register a brand-new account with Firebase Authentication (email/password),
+     * then save the public profile (username, email — never the password) in
+     * Firestore under the new user's UID.
      */
     suspend fun registerOrUpdateUser(
         username: String,
@@ -76,22 +75,17 @@ class FirebaseCloudService {
             val cleanUser = username.trim()
             val cleanPass = password.trim()
 
-            val docRef = usersCollection.document(cleanEmail)
-            val existingSnap = docRef.get().await()
-            val createdAt = if (existingSnap.exists()) {
-                existingSnap.getLong("createdAt") ?: System.currentTimeMillis()
-            } else {
-                System.currentTimeMillis()
-            }
+            val authResult = auth.createUserWithEmailAndPassword(cleanEmail, cleanPass).await()
+            val uid = authResult.user?.uid
+                ?: return@withContext Result.failure(Exception("خطا در ایجاد حساب کاربری"))
 
             val profile = CloudUserProfile(
                 username = cleanUser,
                 email = cleanEmail,
-                password = cleanPass,
-                createdAt = createdAt
+                createdAt = System.currentTimeMillis()
             )
 
-            docRef.set(profile, SetOptions.merge()).await()
+            usersCollection.document(uid).set(profile, SetOptions.merge()).await()
             Result.success(profile)
         } catch (e: Exception) {
             Result.failure(e)
@@ -99,7 +93,7 @@ class FirebaseCloudService {
     }
 
     /**
-     * Authenticate user with Email & Password.
+     * Authenticate an existing user with Email & Password via Firebase Authentication.
      */
     suspend fun authenticateUser(
         email: String,
@@ -109,40 +103,35 @@ class FirebaseCloudService {
             val cleanEmail = email.trim().lowercase()
             val cleanPass = password.trim()
 
-            val snap = usersCollection.document(cleanEmail).get().await()
-            if (!snap.exists()) {
-                return@withContext Result.failure(Exception("حسابی با این آدرس ایمیل یافت نشد"))
+            val authResult = auth.signInWithEmailAndPassword(cleanEmail, cleanPass).await()
+            val uid = authResult.user?.uid
+                ?: return@withContext Result.failure(Exception("خطا در ورود به حساب"))
+
+            val snap = usersCollection.document(uid).get().await()
+            val profile = if (snap.exists()) {
+                snap.toObject(CloudUserProfile::class.java)
+                    ?: CloudUserProfile(email = cleanEmail)
+            } else {
+                // Profile document missing for some reason — recreate a minimal one.
+                CloudUserProfile(email = cleanEmail)
             }
 
-            val user = snap.toObject(CloudUserProfile::class.java)
-                ?: return@withContext Result.failure(Exception("خطا در خواندن اطلاعات حساب"))
-
-            if (user.password != cleanPass) {
-                return@withContext Result.failure(Exception("رمز عبور وارد شده نادرست است"))
-            }
-
-            Result.success(user)
+            Result.success(profile)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     /**
-     * Recover Username and Password using registered Email.
+     * Send a password-reset email via Firebase Authentication. The user gets
+     * a link from Firebase to set a brand-new password — the old password is
+     * never retrievable, by design.
      */
-    suspend fun recoverCredentialsByEmail(email: String): Result<CloudUserProfile> = withContext(Dispatchers.IO) {
+    suspend fun recoverCredentialsByEmail(email: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val cleanEmail = email.trim().lowercase()
-            val snap = usersCollection.document(cleanEmail).get().await()
-
-            if (!snap.exists()) {
-                return@withContext Result.failure(Exception("حسابی با ایمیل $cleanEmail ثبت نشده است"))
-            }
-
-            val user = snap.toObject(CloudUserProfile::class.java)
-                ?: return@withContext Result.failure(Exception("خطا در خواندن اطلاعات حساب"))
-
-            Result.success(user)
+            auth.sendPasswordResetEmail(cleanEmail).await()
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
