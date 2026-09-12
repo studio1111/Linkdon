@@ -44,6 +44,7 @@ import com.example.ui.theme.GlassColors
 fun ItemTypePickerDialog(
     selectedType: ItemType,
     accentHex: String = "#3B82F6",
+    isDark: Boolean = true,
     onSelectType: (ItemType) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -57,22 +58,10 @@ fun ItemTypePickerDialog(
                 .heightIn(max = 640.dp)
                 .testTag("item_type_picker_dialog"),
             shape = RoundedCornerShape(28.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF0F172A).copy(alpha = 0.98f),
-                    Color(0xFF1E293B).copy(alpha = 0.98f),
-                    colorItem.primaryColor.copy(alpha = 0.40f)
-                )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.7f),
-                    colorItem.secondaryColor.copy(alpha = 0.5f),
-                    Color.White.copy(alpha = 0.15f)
-                )
-            ),
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = colorItem.secondaryColor),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = colorItem.highlightColor),
             elevation = 18.dp,
-            shadowColor = colorItem.secondaryColor.copy(alpha = 0.5f)
+            shadowColor = if (isDark) colorItem.secondaryColor.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
         ) {
             Column(
                 modifier = Modifier
@@ -89,13 +78,13 @@ fun ItemTypePickerDialog(
                         Text(
                             text = "انتخاب نوع داده و آیتم",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
+                            color = if (isDark) Color.White else Color(0xFF111827)
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "نوع داده مورد نظر برای ذخیره‌سازی را انتخاب کنید:",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.7f)
+                            color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)
                         )
                     }
 
@@ -106,7 +95,7 @@ fun ItemTypePickerDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "بستن",
-                            tint = Color.White.copy(alpha = 0.8f)
+                            tint = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF374151)
                         )
                     }
                 }
@@ -129,35 +118,63 @@ fun ItemTypePickerDialog(
                                 .testTag("type_option_${type.id}"),
                             shape = RoundedCornerShape(16.dp),
                             backgroundBrush = Brush.linearGradient(
-                                colors = if (isSelected) {
-                                    listOf(
-                                        colorItem.secondaryColor.copy(alpha = 0.45f),
-                                        Color(0xFF1E293B).copy(alpha = 0.90f)
-                                    )
+                                colors = if (isDark) {
+                                    if (isSelected) {
+                                        listOf(
+                                            colorItem.secondaryColor.copy(alpha = 0.45f),
+                                            Color(0xFF1E293B).copy(alpha = 0.90f)
+                                        )
+                                    } else {
+                                        listOf(
+                                            Color.White.copy(alpha = 0.08f),
+                                            Color.Black.copy(alpha = 0.20f)
+                                        )
+                                    }
                                 } else {
-                                    listOf(
-                                        Color.White.copy(alpha = 0.08f),
-                                        Color.Black.copy(alpha = 0.20f)
-                                    )
+                                    if (isSelected) {
+                                        listOf(
+                                            colorItem.secondaryColor.copy(alpha = 0.18f),
+                                            Color(0xFFEDE4D5)
+                                        )
+                                    } else {
+                                        listOf(
+                                            Color(0xFFF3ECE0),
+                                            Color(0xFFEBE3D5)
+                                        )
+                                    }
                                 }
                             ),
                             borderBrush = Brush.linearGradient(
-                                colors = if (isSelected) {
-                                    listOf(
-                                        Color.White.copy(alpha = 0.9f),
-                                        colorItem.highlightColor,
-                                        colorItem.secondaryColor
-                                    )
+                                colors = if (isDark) {
+                                    if (isSelected) {
+                                        listOf(
+                                            Color.White.copy(alpha = 0.9f),
+                                            colorItem.highlightColor,
+                                            colorItem.secondaryColor
+                                        )
+                                    } else {
+                                        listOf(
+                                            Color.White.copy(alpha = 0.25f),
+                                            Color.White.copy(alpha = 0.05f)
+                                        )
+                                    }
                                 } else {
-                                    listOf(
-                                        Color.White.copy(alpha = 0.25f),
-                                        Color.White.copy(alpha = 0.05f)
-                                    )
+                                    if (isSelected) {
+                                        listOf(
+                                            colorItem.secondaryColor,
+                                            colorItem.highlightColor
+                                        )
+                                    } else {
+                                        listOf(
+                                            Color(0xFFDCD5C9),
+                                            Color(0xFFDCD5C9)
+                                        )
+                                    }
                                 }
                             ),
                             borderWidth = if (isSelected) 1.8.dp else 1.dp,
                             elevation = if (isSelected) 8.dp else 2.dp,
-                            glowColor = if (isSelected) colorItem.secondaryColor else Color.Transparent,
+                            glowColor = if (isSelected && isDark) colorItem.secondaryColor else Color.Transparent,
                             onClick = {
                                 onSelectType(type)
                                 onDismiss()
@@ -193,17 +210,26 @@ fun ItemTypePickerDialog(
                                                         )
                                                     )
                                                 } else {
-                                                    Brush.linearGradient(
-                                                        listOf(
-                                                            Color.White.copy(alpha = 0.20f),
-                                                            Color.White.copy(alpha = 0.05f)
+                                                    if (isDark) {
+                                                        Brush.linearGradient(
+                                                            listOf(
+                                                                Color.White.copy(alpha = 0.20f),
+                                                                Color.White.copy(alpha = 0.05f)
+                                                            )
                                                         )
-                                                    )
+                                                    } else {
+                                                        Brush.linearGradient(
+                                                            listOf(
+                                                                colorItem.secondaryColor.copy(alpha = 0.8f),
+                                                                colorItem.primaryColor
+                                                            )
+                                                        )
+                                                    }
                                                 }
                                             )
                                             .border(
                                                 1.dp,
-                                                if (isSelected) Color.White else Color.White.copy(alpha = 0.3f),
+                                                if (isSelected) Color.White else (if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFFDCD5C9)),
                                                 CircleShape
                                             ),
                                         contentAlignment = Alignment.Center
@@ -211,7 +237,7 @@ fun ItemTypePickerDialog(
                                         Icon(
                                             imageVector = type.icon,
                                             contentDescription = null,
-                                            tint = if (isSelected) Color.White else Color.White.copy(alpha = 0.9f),
+                                            tint = Color.White,
                                             modifier = Modifier.size(22.dp)
                                         )
                                     }
@@ -224,7 +250,7 @@ fun ItemTypePickerDialog(
                                             style = MaterialTheme.typography.titleSmall.copy(
                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
                                             ),
-                                            color = Color.White
+                                            color = if (isDark) Color.White else Color(0xFF111827)
                                         )
 
                                         Spacer(modifier = Modifier.height(3.dp))
@@ -233,7 +259,7 @@ fun ItemTypePickerDialog(
                                         Box(
                                             modifier = Modifier
                                                 .background(
-                                                    if (isSelected) colorItem.secondaryColor.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.12f),
+                                                    if (isSelected) colorItem.secondaryColor.copy(alpha = if (isDark) 0.45f else 0.2f) else (if (isDark) Color.White.copy(alpha = 0.12f) else Color(0xFFDCD5C9)),
                                                     RoundedCornerShape(6.dp)
                                                 )
                                                 .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -241,7 +267,7 @@ fun ItemTypePickerDialog(
                                             Text(
                                                 text = type.categoryGroupFa,
                                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                                color = if (isSelected) colorItem.highlightColor else Color.White.copy(alpha = 0.75f)
+                                                color = if (isSelected) (if (isDark) colorItem.highlightColor else colorItem.secondaryColor) else (if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF374151))
                                             )
                                         }
 
@@ -250,7 +276,7 @@ fun ItemTypePickerDialog(
                                         Text(
                                             text = type.descriptionFa,
                                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
-                                            color = Color.White.copy(alpha = 0.75f),
+                                            color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF4B5563),
                                             lineHeight = 16.sp
                                         )
                                     }
@@ -262,7 +288,7 @@ fun ItemTypePickerDialog(
                                 Icon(
                                     imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                                     contentDescription = if (isSelected) "انتخاب شده" else "انتخاب",
-                                    tint = if (isSelected) colorItem.highlightColor else Color.White.copy(alpha = 0.35f),
+                                    tint = if (isSelected) (if (isDark) colorItem.highlightColor else colorItem.secondaryColor) else (if (isDark) Color.White.copy(alpha = 0.35f) else Color(0xFF9CA3AF)),
                                     modifier = Modifier.size(22.dp)
                                 )
                             }

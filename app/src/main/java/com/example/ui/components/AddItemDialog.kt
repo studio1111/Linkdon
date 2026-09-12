@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -64,6 +65,7 @@ fun AddItemDialog(
     categoryId: Long,
     defaultType: ItemType? = null,
     title: String = if (initialItem == null) "افزودن آیتم جدید" else "ویرایش آیتم",
+    isDark: Boolean = true,
     onConfirm: (item: VaultItemEntity) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -162,6 +164,7 @@ fun AddItemDialog(
         ItemTypePickerDialog(
             selectedType = selectedType,
             accentHex = selectedColorHex,
+            isDark = isDark,
             onSelectType = { newType ->
                 selectedType = newType
             },
@@ -177,22 +180,10 @@ fun AddItemDialog(
                 .heightIn(max = 700.dp)
                 .testTag("add_item_dialog"),
             shape = RoundedCornerShape(28.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF1E293B).copy(alpha = 0.98f),
-                    Color(0xFF0F172A).copy(alpha = 0.98f),
-                    colorItem.primaryColor.copy(alpha = 0.35f)
-                )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.7f),
-                    colorItem.secondaryColor.copy(alpha = 0.5f),
-                    Color.White.copy(alpha = 0.15f)
-                )
-            ),
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = colorItem.secondaryColor),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = colorItem.highlightColor),
             elevation = 18.dp,
-            shadowColor = colorItem.secondaryColor.copy(alpha = 0.5f)
+            shadowColor = if (isDark) colorItem.secondaryColor.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
         ) {
             Column(
                 modifier = Modifier
@@ -204,7 +195,7 @@ fun AddItemDialog(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
+                    color = if (isDark) Color.White else Color(0xFF111827),
                     textAlign = TextAlign.Center
                 )
 
@@ -214,7 +205,7 @@ fun AddItemDialog(
                 Text(
                     text = "نوع آیتم:",
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.White.copy(alpha = 0.85f),
+                    color = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF111827),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -226,17 +217,28 @@ fun AddItemDialog(
                         .height(56.dp)
                         .testTag("item_type_picker_trigger"),
                     shape = RoundedCornerShape(16.dp),
-                    backgroundBrush = Brush.linearGradient(
+                    backgroundBrush = if (isDark) Brush.linearGradient(
                         colors = listOf(
                             colorItem.secondaryColor.copy(alpha = 0.35f),
                             Color.White.copy(alpha = 0.08f)
                         )
+                    ) else Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFF3ECE0),
+                            Color(0xFFEBE3D5)
+                        )
                     ),
-                    borderBrush = Brush.linearGradient(
+                    borderBrush = if (isDark) Brush.linearGradient(
                         colors = listOf(
                             Color.White.copy(alpha = 0.7f),
                             colorItem.highlightColor,
                             Color.White.copy(alpha = 0.2f)
+                        )
+                    ) else Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFDCD5C9),
+                            colorItem.secondaryColor.copy(alpha = 0.5f),
+                            Color(0xFFDCD5C9)
                         )
                     ),
                     elevation = 6.dp,
@@ -274,12 +276,12 @@ fun AddItemDialog(
                                 Text(
                                     text = selectedType.titleFa,
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = Color.White
+                                    color = if (isDark) Color.White else Color(0xFF111827)
                                 )
                                 Text(
                                     text = selectedType.categoryGroupFa,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = colorItem.highlightColor
+                                    color = if (isDark) colorItem.highlightColor else colorItem.secondaryColor
                                 )
                             }
                         }
@@ -288,13 +290,13 @@ fun AddItemDialog(
                             Text(
                                 text = "تغییر نوع",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.White.copy(alpha = 0.8f)
+                                color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF4B5563)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Default.ExpandMore,
                                 contentDescription = "تغییر نوع آیتم",
-                                tint = Color.White.copy(alpha = 0.9f),
+                                tint = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF1F2937),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -387,8 +389,8 @@ fun AddItemDialog(
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = colorItem.secondaryColor,
                                         selectedLabelColor = Color.White,
-                                        containerColor = Color.White.copy(alpha = 0.08f),
-                                        labelColor = Color.White.copy(alpha = 0.8f)
+                                        containerColor = if (isDark) Color.White.copy(alpha = 0.08f) else Color(0xFFE5DECF),
+                                        labelColor = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF374151)
                                     ),
                                     shape = RoundedCornerShape(10.dp)
                                 )
@@ -557,7 +559,7 @@ fun AddItemDialog(
                         Text(
                             text = "انتخاب پلتفرم یا پیام‌رسان:",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.8f),
+                            color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF111827),
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -578,8 +580,8 @@ fun AddItemDialog(
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = colorItem.secondaryColor,
                                         selectedLabelColor = Color.White,
-                                        containerColor = Color.White.copy(alpha = 0.08f),
-                                        labelColor = Color.White.copy(alpha = 0.8f)
+                                        containerColor = if (isDark) Color.White.copy(alpha = 0.08f) else Color(0xFFE5DECF),
+                                        labelColor = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF374151)
                                     ),
                                     shape = RoundedCornerShape(10.dp)
                                 )
@@ -665,7 +667,7 @@ fun AddItemDialog(
                                     Icon(
                                         imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                         contentDescription = "نمایش رمز",
-                                        tint = Color.White.copy(alpha = 0.7f)
+                                        tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF374151)
                                     )
                                 }
                             },
@@ -715,7 +717,7 @@ fun AddItemDialog(
                                     Icon(
                                         imageVector = if (secondaryPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                         contentDescription = "نمایش رمز",
-                                        tint = Color.White.copy(alpha = 0.7f)
+                                        tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF374151)
                                     )
                                 }
                             },
@@ -830,7 +832,7 @@ fun AddItemDialog(
                     Text(
                         text = "امتیاز و اولویت آیتم:",
                         style = MaterialTheme.typography.labelLarge,
-                        color = Color.White.copy(alpha = 0.85f)
+                        color = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF111827)
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(
@@ -840,7 +842,8 @@ fun AddItemDialog(
                         StarRatingBar(
                             rating = rating,
                             onRatingChanged = { rating = it },
-                            starSize = 18.dp
+                            starSize = 18.dp,
+                            isDark = isDark
                         )
                     }
                 }
@@ -849,6 +852,7 @@ fun AddItemDialog(
 
                 ColorPickerCarousel(
                     selectedHex = selectedColorHex,
+                    isDark = isDark,
                     onColorSelected = { selectedColorHex = it }
                 )
 
@@ -866,12 +870,12 @@ fun AddItemDialog(
                             .testTag("item_dialog_cancel_button"),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.White
+                            contentColor = if (isDark) Color.White else Color(0xFF374151)
                         )
                     ) {
                         AutoFitButtonText(
                             text = "انصراف",
-                            color = Color.White
+                            color = if (isDark) Color.White else Color(0xFF374151)
                         )
                     }
 
@@ -954,12 +958,16 @@ private fun formatCardDisplay(num: String): String {
 }
 
 @Composable
-private fun customTextFieldColors(primary: Color, highlight: Color) = OutlinedTextFieldDefaults.colors(
-    focusedTextColor = Color.White,
-    unfocusedTextColor = Color.White,
+private fun customTextFieldColors(
+    primary: Color,
+    highlight: Color,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
+) = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+    unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
     focusedBorderColor = primary,
-    unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-    focusedLabelColor = highlight,
-    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-    cursorColor = highlight
+    unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFF9CA3AF),
+    focusedLabelColor = if (isDark) highlight else primary,
+    unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
+    cursorColor = if (isDark) highlight else primary
 )

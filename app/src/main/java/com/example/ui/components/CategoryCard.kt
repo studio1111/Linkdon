@@ -99,7 +99,7 @@ fun CategoryCard(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "تنظیمات دسته",
-                            tint = Color.White.copy(alpha = 0.9f),
+                            tint = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827),
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -109,13 +109,13 @@ fun CategoryCard(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
                         modifier = Modifier
-                            .background(Color(0xFF0F172A).copy(alpha = 0.95f))
+                            .background(if (isDark) Color(0xFF0F172A).copy(alpha = 0.95f) else Color(0xFFFFFFFF))
                     ) {
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     text = "تغییر نام دسته",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             },
@@ -131,7 +131,7 @@ fun CategoryCard(
                             text = {
                                 Text(
                                     text = "انتقال دسته",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             },
@@ -147,7 +147,7 @@ fun CategoryCard(
                             text = {
                                 Text(
                                     text = "تغییر رنگ (۱۶ رنگ)",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             },
@@ -218,7 +218,7 @@ fun CategoryCard(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.3.sp
                         ),
-                        color = Color.White,
+                        color = if (isDark) Color.White else Color(0xFF111827),
                         textAlign = TextAlign.Center,
                         collapsedMaxLines = 2,
                         minFontSize = 10.sp
@@ -226,7 +226,7 @@ fun CategoryCard(
 
                     if (category.rating > 0f) {
                         Spacer(modifier = Modifier.height(4.dp))
-                        RatingBadge(rating = category.rating)
+                        RatingBadge(rating = category.rating, isDark = isDark)
                     }
                 }
             }
@@ -274,13 +274,13 @@ fun CategoryCard(
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color.White,
+                            color = if (isDark) Color.White else Color(0xFF111827),
                             collapsedMaxLines = 1,
                             minFontSize = 10.sp
                         )
                         if (category.rating > 0f) {
                             Spacer(modifier = Modifier.height(2.dp))
-                            RatingBadge(rating = category.rating)
+                            RatingBadge(rating = category.rating, isDark = isDark)
                         }
                     }
                 }
@@ -294,20 +294,20 @@ fun CategoryCard(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "تنظیمات دسته",
-                            tint = Color.White.copy(alpha = 0.9f)
+                            tint = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827)
                         )
                     }
 
                     DropdownMenu(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
-                        modifier = Modifier.background(Color(0xFF0F172A).copy(alpha = 0.95f))
+                        modifier = Modifier.background(if (isDark) Color(0xFF0F172A).copy(alpha = 0.95f) else Color(0xFFFFFFFF))
                     ) {
                         DropdownMenuItem(
                             text = {
                                 AutoFitButtonText(
                                     text = "تغییر نام دسته",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     targetFontSize = 13.sp
                                 )
                             },
@@ -323,7 +323,7 @@ fun CategoryCard(
                             text = {
                                 AutoFitButtonText(
                                     text = "انتقال دسته",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     targetFontSize = 13.sp
                                 )
                             },
@@ -339,7 +339,7 @@ fun CategoryCard(
                             text = {
                                 AutoFitButtonText(
                                     text = "تغییر رنگ (۱۶ رنگ)",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     targetFontSize = 13.sp
                                 )
                             },

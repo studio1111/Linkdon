@@ -68,8 +68,9 @@ fun StarRatingBar(
     starSize: Dp = 18.dp,
     showControls: Boolean = true,
     showNumberBelow: Boolean = true,
+    isDark: Boolean = true,
     filledColor: Color = Color(0xFFFBBF24), // Vibrant Amber gold
-    unfilledColor: Color = Color.White.copy(alpha = 0.30f),
+    unfilledColor: Color = if (isDark) Color.White.copy(alpha = 0.30f) else Color(0xFFD1D5DB),
     modifier: Modifier = Modifier
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -155,7 +156,7 @@ fun StarRatingBar(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.12f))
+                        .background(if (isDark) Color.White.copy(alpha = 0.12f) else Color(0xFFE5E7EB))
                         .clickable(enabled = rating > 0f) {
                             val newRating = (rating - 0.5f).coerceAtLeast(0f)
                             onRatingChanged(newRating)
@@ -165,7 +166,7 @@ fun StarRatingBar(
                     Icon(
                         imageVector = Icons.Default.Remove,
                         contentDescription = "کاهش نیم ستاره",
-                        tint = if (rating > 0f) Color.White else Color.White.copy(alpha = 0.3f),
+                        tint = if (rating > 0f) (if (isDark) Color.White else Color(0xFF111827)) else (if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFF9CA3AF)),
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -202,7 +203,7 @@ fun StarRatingBar(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "${formatRating(rating)} از $maxStars",
-                            color = Color.White,
+                            color = if (isDark) Color.White else Color(0xFF111827),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -210,7 +211,7 @@ fun StarRatingBar(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "(پاک کردن)",
-                                color = Color.White.copy(alpha = 0.6f),
+                                color = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280),
                                 fontSize = 10.sp
                             )
                         }
@@ -224,7 +225,7 @@ fun StarRatingBar(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.12f))
+                        .background(if (isDark) Color.White.copy(alpha = 0.12f) else Color(0xFFE5E7EB))
                         .clickable(enabled = rating < maxStars) {
                             val newRating = (rating + 0.5f).coerceAtMost(maxStars.toFloat())
                             onRatingChanged(newRating)
@@ -234,7 +235,7 @@ fun StarRatingBar(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "افزایش نیم ستاره",
-                        tint = if (rating < maxStars) Color.White else Color.White.copy(alpha = 0.3f),
+                        tint = if (rating < maxStars) (if (isDark) Color.White else Color(0xFF111827)) else (if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFF9CA3AF)),
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -243,7 +244,7 @@ fun StarRatingBar(
             Spacer(modifier = Modifier.height(3.dp))
             Text(
                 text = "${formatRating(rating)} / $maxStars",
-                color = Color.White.copy(alpha = 0.9f),
+                color = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -321,7 +322,8 @@ fun RatingBadge(
     modifier: Modifier = Modifier,
     maxStars: Int = 10,
     filledColor: Color = Color(0xFFFBBF24),
-    showMax: Boolean = false
+    showMax: Boolean = false,
+    isDark: Boolean = true
 ) {
     if (rating <= 0f) return
 
@@ -347,7 +349,7 @@ fun RatingBadge(
             Spacer(modifier = Modifier.height(1.dp))
             Text(
                 text = if (showMax) "${formatRating(rating)}/$maxStars" else formatRating(rating),
-                color = Color.White,
+                color = if (isDark) Color.White else Color(0xFF111827),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 lineHeight = 10.sp

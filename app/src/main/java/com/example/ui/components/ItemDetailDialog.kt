@@ -68,6 +68,7 @@ import com.example.ui.theme.GlassColors
 @Composable
 fun ItemDetailDialog(
     item: VaultItemEntity,
+    isDark: Boolean = true,
     onEdit: () -> Unit,
     onMove: () -> Unit = {},
     onDelete: () -> Unit,
@@ -124,22 +125,10 @@ fun ItemDetailDialog(
                 .heightIn(max = 700.dp)
                 .testTag("item_detail_dialog"),
             shape = RoundedCornerShape(28.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF1E293B).copy(alpha = 0.98f),
-                    Color(0xFF0F172A).copy(alpha = 0.98f),
-                    colorItem.primaryColor.copy(alpha = 0.40f)
-                )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.7f),
-                    colorItem.secondaryColor.copy(alpha = 0.5f),
-                    Color.White.copy(alpha = 0.15f)
-                )
-            ),
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = colorItem.secondaryColor),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = colorItem.highlightColor),
             elevation = 18.dp,
-            shadowColor = colorItem.secondaryColor.copy(alpha = 0.5f)
+            shadowColor = if (isDark) colorItem.secondaryColor.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
         ) {
             Column(
                 modifier = Modifier
@@ -165,8 +154,8 @@ fun ItemDetailDialog(
                                 .background(
                                     Brush.linearGradient(
                                         colors = listOf(
-                                            colorItem.highlightColor.copy(alpha = 0.4f),
-                                            colorItem.primaryColor.copy(alpha = 0.8f)
+                                            colorItem.highlightColor.copy(alpha = if (isDark) 0.4f else 0.8f),
+                                            colorItem.primaryColor.copy(alpha = if (isDark) 0.8f else 1.0f)
                                         )
                                     )
                                 ),
@@ -188,7 +177,8 @@ fun ItemDetailDialog(
                                     starSize = 14.dp,
                                     filledColor = Color(0xFFFBBF24),
                                     showControls = false,
-                                    showNumberBelow = true
+                                    showNumberBelow = true,
+                                    isDark = isDark
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                             }
@@ -197,7 +187,7 @@ fun ItemDetailDialog(
                             ExpandableAutoText(
                                 text = item.title,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White,
+                                color = if (isDark) Color.White else Color(0xFF111827),
                                 collapsedMaxLines = 2,
                                 minFontSize = 12.sp
                             )
@@ -208,7 +198,7 @@ fun ItemDetailDialog(
                                 Text(
                                     text = item.description,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.White.copy(alpha = 0.8f)
+                                    color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF374151)
                                 )
                             }
 
@@ -217,7 +207,7 @@ fun ItemDetailDialog(
                             Text(
                                 text = itemType.titleFa,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = colorItem.highlightColor
+                                color = if (isDark) colorItem.highlightColor else colorItem.secondaryColor
                             )
                         }
                     }
@@ -229,7 +219,7 @@ fun ItemDetailDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "بستن",
-                            tint = Color.White.copy(alpha = 0.7f)
+                            tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF374151)
                         )
                     }
                 }
@@ -346,7 +336,8 @@ fun ItemDetailDialog(
                             label = "شماره ۱۶ رقمی کارت",
                             value = formatCardDisplay(cardNum),
                             onCopy = { copyToClipboard("شماره کارت", cardNum) },
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
 
                         if (cvv.isNotBlank()) {
@@ -355,7 +346,8 @@ fun ItemDetailDialog(
                                 label = "کد CVV2",
                                 value = cvv,
                                 onCopy = { copyToClipboard("کد CVV2", cvv) },
-                                colorItem = colorItem
+                                colorItem = colorItem,
+                                isDark = isDark
                             )
                         }
 
@@ -368,7 +360,8 @@ fun ItemDetailDialog(
                                     val full = if (sheba.startsWith("IR", ignoreCase = true)) sheba else "IR$sheba"
                                     copyToClipboard("شماره شبا", full)
                                 },
-                                colorItem = colorItem
+                                colorItem = colorItem,
+                                isDark = isDark
                             )
                         }
                     }
@@ -385,7 +378,8 @@ fun ItemDetailDialog(
                             actionIcon = Icons.Default.Call,
                             actionLabel = "تماس",
                             onAction = { dialPhone(mainPhone) },
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
 
                         if (secPhone.isNotBlank()) {
@@ -397,7 +391,8 @@ fun ItemDetailDialog(
                                 actionIcon = Icons.Default.Call,
                                 actionLabel = "تماس",
                                 onAction = { dialPhone(secPhone) },
-                                colorItem = colorItem
+                                colorItem = colorItem,
+                                isDark = isDark
                             )
                         }
 
@@ -410,7 +405,8 @@ fun ItemDetailDialog(
                                 actionIcon = Icons.Default.Email,
                                 actionLabel = "ارسال ایمیل",
                                 onAction = { sendEmail(email) },
-                                colorItem = colorItem
+                                colorItem = colorItem,
+                                isDark = isDark
                             )
                         }
                     }
@@ -424,7 +420,8 @@ fun ItemDetailDialog(
                             label = "پلتفرم و شناسه کانال ($platform)",
                             value = channelId,
                             onCopy = { copyToClipboard("شناسه کانال", channelId) },
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
 
                         if (link.isNotBlank()) {
@@ -436,7 +433,8 @@ fun ItemDetailDialog(
                                 actionIcon = Icons.Default.OpenInBrowser,
                                 actionLabel = "باز کردن در مرورگر",
                                 onAction = { openUrl(link) },
-                                colorItem = colorItem
+                                colorItem = colorItem,
+                                isDark = isDark
                             )
                         }
                     }
@@ -449,7 +447,8 @@ fun ItemDetailDialog(
                             actionIcon = Icons.Default.OpenInBrowser,
                             actionLabel = "باز کردن",
                             onAction = { openUrl(item.primaryValue) },
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
                     }
 
@@ -458,7 +457,8 @@ fun ItemDetailDialog(
                             label = "ایمیل / نام کاربری",
                             value = item.primaryValue,
                             onCopy = { copyToClipboard("ایمیل", item.primaryValue) },
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -470,7 +470,8 @@ fun ItemDetailDialog(
                             actionIcon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             actionLabel = if (passwordVisible) "مخفی" else "نمایش",
                             onAction = { passwordVisible = !passwordVisible },
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
                     }
 
@@ -482,7 +483,8 @@ fun ItemDetailDialog(
                             actionIcon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             actionLabel = if (passwordVisible) "مخفی" else "نمایش",
                             onAction = { passwordVisible = !passwordVisible },
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
 
                         if (item.secondaryValue.isNotBlank()) {
@@ -491,7 +493,8 @@ fun ItemDetailDialog(
                                 label = "رمز عبور / اطلاعات محرمانه",
                                 value = if (passwordVisible) item.secondaryValue else "••••••••••••",
                                 onCopy = { copyToClipboard("رمز محرمانه", item.secondaryValue) },
-                                colorItem = colorItem
+                                colorItem = colorItem,
+                                isDark = isDark
                             )
                         }
                     }
@@ -502,7 +505,8 @@ fun ItemDetailDialog(
                             value = item.primaryValue,
                             onCopy = { copyToClipboard("پرامپت", item.primaryValue) },
                             isMultiLine = true,
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
                     }
 
@@ -512,7 +516,8 @@ fun ItemDetailDialog(
                             value = item.primaryValue,
                             onCopy = { copyToClipboard("یادداشت", item.primaryValue) },
                             isMultiLine = true,
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
                     }
 
@@ -521,7 +526,7 @@ fun ItemDetailDialog(
                             Text(
                                 text = "زبان: ${item.secondaryValue}",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = colorItem.highlightColor
+                                color = if (isDark) colorItem.highlightColor else colorItem.secondaryColor
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                         }
@@ -531,7 +536,8 @@ fun ItemDetailDialog(
                             onCopy = { copyToClipboard("کد برنامه‌نویسی", item.primaryValue) },
                             isCode = true,
                             isMultiLine = true,
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
                     }
 
@@ -541,7 +547,8 @@ fun ItemDetailDialog(
                             value = item.primaryValue,
                             onCopy = { copyToClipboard("متن", item.primaryValue) },
                             isMultiLine = true,
-                            colorItem = colorItem
+                            colorItem = colorItem,
+                            isDark = isDark
                         )
                     }
                 }
@@ -551,20 +558,27 @@ fun ItemDetailDialog(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-                            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                            .background(
+                                if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .border(
+                                1.dp,
+                                if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFDCD5C9),
+                                RoundedCornerShape(12.dp)
+                            )
                             .padding(12.dp)
                     ) {
                         Text(
                             text = "توضیحات تکمیلی:",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.6f)
+                            color = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF4B5563)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = item.description,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.9f)
+                            color = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827)
                         )
                     }
                 }
@@ -608,7 +622,7 @@ fun ItemDetailDialog(
                             .height(44.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFF38BDF8)
+                            contentColor = if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)
                         )
                     ) {
                         Icon(
@@ -617,7 +631,7 @@ fun ItemDetailDialog(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        AutoFitButtonText(text = "انتقال", color = Color(0xFF38BDF8))
+                        AutoFitButtonText(text = "انتقال", color = if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7))
                     }
 
                     Button(
@@ -675,13 +689,21 @@ private fun DetailValueBlock(
     onAction: (() -> Unit)? = null,
     isCode: Boolean = false,
     isMultiLine: Boolean = false,
-    colorItem: com.example.ui.theme.GlassColorItem
+    colorItem: com.example.ui.theme.GlassColorItem,
+    isDark: Boolean = true
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.07f), RoundedCornerShape(16.dp))
-            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
+            .background(
+                if (isDark) Color.White.copy(alpha = 0.07f) else Color(0xFFF3ECE0),
+                RoundedCornerShape(16.dp)
+            )
+            .border(
+                1.dp,
+                if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9),
+                RoundedCornerShape(16.dp)
+            )
             .padding(12.dp)
     ) {
         Row(
@@ -692,7 +714,7 @@ private fun DetailValueBlock(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = colorItem.highlightColor
+                color = if (isDark) colorItem.highlightColor else colorItem.secondaryColor
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -704,7 +726,7 @@ private fun DetailValueBlock(
                         Icon(
                             imageVector = actionIcon,
                             contentDescription = actionLabel ?: "",
-                            tint = Color.White,
+                            tint = if (isDark) Color.White else Color(0xFF1F2937),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -718,7 +740,7 @@ private fun DetailValueBlock(
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
                         contentDescription = "کپی",
-                        tint = Color.White,
+                        tint = if (isDark) Color.White else Color(0xFF1F2937),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -735,7 +757,7 @@ private fun DetailValueBlock(
                     fontSize = 13.sp
                 )
             } else MaterialTheme.typography.bodyMedium,
-            color = Color.White,
+            color = if (isDark) Color.White else Color(0xFF111827),
             collapsedMaxLines = if (isMultiLine) 4 else 2,
             minFontSize = 10.sp,
             modifier = Modifier.fillMaxWidth()

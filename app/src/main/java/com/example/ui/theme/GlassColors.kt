@@ -142,11 +142,12 @@ object GlassColors {
                 )
             )
         } else {
+            // Light Theme: OPAQUE MATTE MILKY WHITE with subtle accent
             Brush.linearGradient(
                 colors = listOf(
-                    item.secondaryColor.copy(alpha = 0.25f),
-                    item.highlightColor.copy(alpha = 0.18f),
-                    Color.White.copy(alpha = 0.65f)
+                    Color(0xFFFFFFFF),
+                    Color(0xFFFAF7F2),
+                    item.highlightColor.copy(alpha = 0.22f)
                 )
             )
         }
@@ -163,11 +164,12 @@ object GlassColors {
                 )
             )
         } else {
+            // Light Theme: Opaque crisp border for contrast
             Brush.linearGradient(
                 colors = listOf(
-                    Color.White.copy(alpha = 0.85f),
-                    item.secondaryColor.copy(alpha = 0.40f),
-                    Color.White.copy(alpha = 0.30f)
+                    Color(0xFFE2DDD5),
+                    item.secondaryColor.copy(alpha = 0.55f),
+                    Color(0xFFD5CEC2)
                 )
             )
         }
@@ -184,8 +186,8 @@ object GlassColors {
         } else {
             Brush.linearGradient(
                 colors = listOf(
-                    Color.White.copy(alpha = 0.70f),
-                    Color.White.copy(alpha = 0.40f)
+                    Color(0xFFFFFFFF),
+                    Color(0xFFF3EFE7)
                 )
             )
         }
@@ -202,8 +204,91 @@ object GlassColors {
         } else {
             Brush.linearGradient(
                 colors = listOf(
-                    Color.White.copy(alpha = 0.80f),
-                    Color.White.copy(alpha = 0.25f)
+                    Color(0xFFDCD5C9),
+                    Color(0xFFCCC4B6)
+                )
+            )
+        }
+    }
+
+    fun getOpaqueDialogBrush(isDark: Boolean = true, accentHex: String = "#3B82F6"): Brush {
+        val item = getColorItem(accentHex)
+        return if (isDark) {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFF1E293B).copy(alpha = 0.98f),
+                    Color(0xFF0F172A).copy(alpha = 0.98f),
+                    item.primaryColor.copy(alpha = 0.40f)
+                )
+            )
+        } else {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFFFFFFFF),
+                    Color(0xFFFAF7F2),
+                    Color(0xFFF3EFE7)
+                )
+            )
+        }
+    }
+
+    fun getOpaqueDialogBrush(isDark: Boolean = true, accentColor: Color): Brush {
+        return if (isDark) {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFF1E293B).copy(alpha = 0.98f),
+                    Color(0xFF0F172A).copy(alpha = 0.98f),
+                    accentColor.copy(alpha = 0.25f)
+                )
+            )
+        } else {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFFFFFFFF),
+                    Color(0xFFFAF7F2),
+                    Color(0xFFF3EFE7)
+                )
+            )
+        }
+    }
+
+    fun getOpaqueDialogBorderBrush(isDark: Boolean = true, accentHex: String = "#3B82F6"): Brush {
+        val item = getColorItem(accentHex)
+        return if (isDark) {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color.White.copy(alpha = 0.7f),
+                    item.secondaryColor.copy(alpha = 0.5f),
+                    Color.White.copy(alpha = 0.15f)
+                )
+            )
+        } else {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFFDCD5C9),
+                    item.secondaryColor.copy(alpha = 0.40f),
+                    Color(0xFFCCC4B6)
+                )
+            )
+        }
+    }
+
+    fun getOpaqueBorderBrush(isDark: Boolean = true, accentColor: Color? = null): Brush {
+        val accent = accentColor ?: Color(0xFF3B82F6)
+        return if (isDark) {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color.White.copy(alpha = 0.7f),
+                    accent.copy(alpha = 0.5f),
+                    Color.White.copy(alpha = 0.15f)
+                )
+            )
+        } else {
+            Brush.linearGradient(
+                colors = listOf(
+                    Color(0xFFDCD5C9),
+                    accent.copy(alpha = 0.40f),
+                    Color(0xFFCCC4B6)
                 )
             )
         }

@@ -70,6 +70,7 @@ fun MoveDestinationDialog(
     isMovingCategory: Boolean,
     currentParentOrCategoryId: Long?,
     disallowedCategoryIds: Set<Long> = emptySet(),
+    isDark: Boolean = true,
     onConfirmMoveTo: (Long?) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -120,22 +121,10 @@ fun MoveDestinationDialog(
                 .heightIn(max = 680.dp)
                 .testTag("move_destination_dialog"),
             shape = RoundedCornerShape(28.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF1E293B).copy(alpha = 0.98f),
-                    Color(0xFF0F172A).copy(alpha = 0.98f),
-                    Color(0xFF0284C7).copy(alpha = 0.25f)
-                )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.7f),
-                    Color(0xFF38BDF8).copy(alpha = 0.5f),
-                    Color.White.copy(alpha = 0.15f)
-                )
-            ),
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = Color(0xFF0284C7)),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = Color(0xFF38BDF8)),
             elevation = 18.dp,
-            shadowColor = Color(0xFF0284C7).copy(alpha = 0.5f)
+            shadowColor = if (isDark) Color(0xFF0284C7).copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
         ) {
             Column(
                 modifier = Modifier
@@ -179,14 +168,14 @@ fun MoveDestinationDialog(
                             ExpandableAutoText(
                                 text = title,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White,
+                                color = if (isDark) Color.White else Color(0xFF111827),
                                 collapsedMaxLines = 1,
                                 minFontSize = 12.sp
                             )
                             ExpandableAutoText(
                                 text = "انتقال: «$targetName»",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF38BDF8),
+                                color = if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7),
                                 collapsedMaxLines = 1,
                                 minFontSize = 10.sp
                             )
@@ -200,7 +189,7 @@ fun MoveDestinationDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "بستن",
-                            tint = Color.White.copy(alpha = 0.7f)
+                            tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF374151)
                         )
                     }
                 }
@@ -211,15 +200,22 @@ fun MoveDestinationDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White.copy(alpha = 0.06f), RoundedCornerShape(12.dp))
-                        .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+                        .background(
+                            if (isDark) Color.White.copy(alpha = 0.06f) else Color(0xFFF3ECE0),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .border(
+                            1.dp,
+                            if (isDark) Color.White.copy(alpha = 0.12f) else Color(0xFFDCD5C9),
+                            RoundedCornerShape(12.dp)
+                        )
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "موقعیت فعلی:",
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                        color = Color.White.copy(alpha = 0.6f)
+                        color = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF4B5563)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     ExpandableAutoText(
@@ -228,7 +224,7 @@ fun MoveDestinationDialog(
                             fontWeight = FontWeight.Bold,
                             fontSize = 11.sp
                         ),
-                        color = Color(0xFFFBBF24),
+                        color = if (isDark) Color(0xFFFBBF24) else Color(0xFFD97706),
                         collapsedMaxLines = 1,
                         minFontSize = 9.sp,
                         modifier = Modifier.weight(1f)
@@ -245,14 +241,14 @@ fun MoveDestinationDialog(
                         Text(
                             text = "جستجوی دسته مقصد...",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.5f)
+                            color = if (isDark) Color.White.copy(alpha = 0.5f) else Color(0xFF6B7280)
                         )
                     },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.6f),
+                            tint = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280),
                             modifier = Modifier.size(20.dp)
                         )
                     },
@@ -262,7 +258,7 @@ fun MoveDestinationDialog(
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "پاک کردن",
-                                    tint = Color.White.copy(alpha = 0.6f),
+                                    tint = if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280),
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -274,11 +270,11 @@ fun MoveDestinationDialog(
                         .height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFF38BDF8),
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                        cursorColor = Color(0xFF38BDF8)
+                        focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                        unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                        focusedBorderColor = Color(0xFF0284C7),
+                        unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.2f) else Color(0xFF9CA3AF),
+                        cursorColor = Color(0xFF0284C7)
                     )
                 )
 
@@ -287,7 +283,7 @@ fun MoveDestinationDialog(
                 Text(
                     text = "مقصد جدید را انتخاب کنید:",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = Color.White.copy(alpha = 0.7f)
+                    color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF111827)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -315,6 +311,7 @@ fun MoveDestinationDialog(
                                 icon = Icons.Default.FolderOpen,
                                 iconColor = Color(0xFF38BDF8),
                                 depth = 0,
+                                isDark = isDark,
                                 onClick = {
                                     if (!isCurrentRoot) {
                                         selectedTargetId = null
@@ -336,7 +333,7 @@ fun MoveDestinationDialog(
                                 Text(
                                     text = if (searchQuery.isNotBlank()) "دسته‌ای با این نام پیدا نشد" else "هیچ دسته مقصدی وجود ندارد",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.White.copy(alpha = 0.5f),
+                                    color = if (isDark) Color.White.copy(alpha = 0.5f) else Color(0xFF6B7280),
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -366,6 +363,7 @@ fun MoveDestinationDialog(
                                 icon = if (item.depth > 0) Icons.Default.SubdirectoryArrowLeft else Icons.Default.Folder,
                                 iconColor = colorItem.secondaryColor,
                                 depth = item.depth,
+                                isDark = isDark,
                                 onClick = {
                                     if (!isDisallowed && !isCurrent) {
                                         selectedTargetId = cat.id
@@ -390,10 +388,10 @@ fun MoveDestinationDialog(
                             .height(46.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.White.copy(alpha = 0.85f)
+                            contentColor = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF374151)
                         )
                     ) {
-                        AutoFitButtonText(text = "انصراف", color = Color.White)
+                        AutoFitButtonText(text = "انصراف", color = if (isDark) Color.White else Color(0xFF374151))
                     }
 
                     Button(
@@ -408,8 +406,8 @@ fun MoveDestinationDialog(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF0284C7),
                             contentColor = Color.White,
-                            disabledContainerColor = Color.White.copy(alpha = 0.12f),
-                            disabledContentColor = Color.White.copy(alpha = 0.35f)
+                            disabledContainerColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color(0xFFDCD5C9),
+                            disabledContentColor = if (isDark) Color.White.copy(alpha = 0.35f) else Color(0xFF9CA3AF)
                         )
                     ) {
                         Icon(
@@ -440,21 +438,22 @@ private fun DestinationRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     iconColor: Color,
     depth: Int,
+    isDark: Boolean = true,
     onClick: () -> Unit
 ) {
     val indentPadding = (depth * 14).dp
 
     val bgColor = when {
-        isSelected -> Color(0xFF0284C7).copy(alpha = 0.35f)
-        isCurrent -> Color.White.copy(alpha = 0.04f)
-        isDisabled -> Color.White.copy(alpha = 0.02f)
-        else -> Color.White.copy(alpha = 0.06f)
+        isSelected -> if (isDark) Color(0xFF0284C7).copy(alpha = 0.35f) else Color(0xFFBAE6FD)
+        isCurrent -> if (isDark) Color.White.copy(alpha = 0.04f) else Color(0xFFF3ECE0)
+        isDisabled -> if (isDark) Color.White.copy(alpha = 0.02f) else Color(0xFFE5DECF).copy(alpha = 0.5f)
+        else -> if (isDark) Color.White.copy(alpha = 0.06f) else Color(0xFFF3ECE0)
     }
 
     val borderColor = when {
-        isSelected -> Color(0xFF38BDF8).copy(alpha = 0.85f)
-        isCurrent -> Color(0xFFFBBF24).copy(alpha = 0.35f)
-        else -> Color.White.copy(alpha = 0.10f)
+        isSelected -> Color(0xFF0284C7)
+        isCurrent -> if (isDark) Color(0xFFFBBF24).copy(alpha = 0.35f) else Color(0xFFD97706).copy(alpha = 0.45f)
+        else -> if (isDark) Color.White.copy(alpha = 0.10f) else Color(0xFFDCD5C9)
     }
 
     Row(
@@ -478,14 +477,18 @@ private fun DestinationRow(
                     .size(34.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isDisabled) Color.White.copy(alpha = 0.08f) else iconColor.copy(alpha = 0.25f)
+                        if (isDisabled) {
+                            if (isDark) Color.White.copy(alpha = 0.08f) else Color(0xFFDCD5C9)
+                        } else {
+                            if (isDark) iconColor.copy(alpha = 0.25f) else iconColor.copy(alpha = 0.18f)
+                        }
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (isDisabled) Color.White.copy(alpha = 0.3f) else iconColor,
+                    tint = if (isDisabled) (if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFF9CA3AF)) else iconColor,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -499,9 +502,9 @@ private fun DestinationRow(
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                     ),
                     color = when {
-                        isDisabled -> Color.White.copy(alpha = 0.35f)
-                        isSelected -> Color.White
-                        else -> Color.White.copy(alpha = 0.9f)
+                        isDisabled -> if (isDark) Color.White.copy(alpha = 0.35f) else Color(0xFF9CA3AF)
+                        isSelected -> if (isDark) Color.White else Color(0xFF0369A1)
+                        else -> if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827)
                     },
                     collapsedMaxLines = 1,
                     minFontSize = 10.sp
@@ -510,10 +513,10 @@ private fun DestinationRow(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
                     color = when {
-                        isCurrent -> Color(0xFFFBBF24).copy(alpha = 0.8f)
-                        isSelected -> Color(0xFF7DD3FC)
-                        isDisabled -> Color.White.copy(alpha = 0.25f)
-                        else -> Color.White.copy(alpha = 0.5f)
+                        isCurrent -> if (isDark) Color(0xFFFBBF24).copy(alpha = 0.8f) else Color(0xFFD97706)
+                        isSelected -> if (isDark) Color(0xFF7DD3FC) else Color(0xFF0284C7)
+                        isDisabled -> if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFF9CA3AF)
+                        else -> if (isDark) Color.White.copy(alpha = 0.5f) else Color(0xFF4B5563)
                     },
                     collapsedMaxLines = 1,
                     minFontSize = 9.sp
@@ -529,13 +532,13 @@ private fun DestinationRow(
                 modifier = Modifier
                     .size(24.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF38BDF8)),
+                    .background(Color(0xFF0284C7)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "انتخاب شده",
-                    tint = Color(0xFF0F172A),
+                    tint = Color.White,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -546,9 +549,17 @@ private fun DestinationRow(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color(0xFFFBBF24),
+                color = if (isDark) Color(0xFFFBBF24) else Color(0xFFD97706),
                 modifier = Modifier
-                    .background(Color(0xFFFBBF24).copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                    .background(
+                        if (isDark) Color(0xFFFBBF24).copy(alpha = 0.15f) else Color(0xFFFEF3C7),
+                        RoundedCornerShape(6.dp)
+                    )
+                    .border(
+                        1.dp,
+                        if (isDark) Color(0xFFFBBF24).copy(alpha = 0.35f) else Color(0xFFD97706).copy(alpha = 0.35f),
+                        RoundedCornerShape(6.dp)
+                    )
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             )
         }

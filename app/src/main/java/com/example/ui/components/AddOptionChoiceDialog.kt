@@ -34,10 +34,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.ui.theme.GlassColors
 
 @Composable
 fun AddOptionChoiceDialog(
     categoryName: String,
+    isDark: Boolean = true,
     onChooseSubcategory: () -> Unit,
     onChooseItem: () -> Unit,
     onDismiss: () -> Unit
@@ -49,22 +51,10 @@ fun AddOptionChoiceDialog(
                 .padding(12.dp)
                 .testTag("add_option_choice_dialog"),
             shape = RoundedCornerShape(28.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF1E293B).copy(alpha = 0.95f),
-                    Color(0xFF0F172A).copy(alpha = 0.98f),
-                    Color(0xFF1E40AF).copy(alpha = 0.35f)
-                )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.7f),
-                    Color(0xFF38BDF8).copy(alpha = 0.4f),
-                    Color.White.copy(alpha = 0.15f)
-                )
-            ),
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = Color(0xFF1E40AF)),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = Color(0xFF38BDF8)),
             elevation = 16.dp,
-            shadowColor = Color(0xFF38BDF8).copy(alpha = 0.4f)
+            shadowColor = if (isDark) Color(0xFF38BDF8).copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.12f)
         ) {
             Column(
                 modifier = Modifier
@@ -81,7 +71,7 @@ fun AddOptionChoiceDialog(
                     ExpandableAutoText(
                         text = "افزودن به «$categoryName»",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White,
+                        color = if (isDark) Color.White else Color(0xFF111827),
                         collapsedMaxLines = 1,
                         minFontSize = 12.sp,
                         modifier = Modifier.weight(1f)
@@ -93,7 +83,7 @@ fun AddOptionChoiceDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "بستن",
-                            tint = Color.White.copy(alpha = 0.7f)
+                            tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF374151)
                         )
                     }
                 }
@@ -103,7 +93,7 @@ fun AddOptionChoiceDialog(
                 ExpandableAutoText(
                     text = "نوع محتوایی که می‌خواهید ایجاد کنید را انتخاب نمایید:",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.75f),
+                    color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF4B5563),
                     textAlign = TextAlign.Start,
                     collapsedMaxLines = 2,
                     minFontSize = 11.sp,
@@ -119,16 +109,26 @@ fun AddOptionChoiceDialog(
                         .height(84.dp)
                         .testTag("choose_subcategory_option"),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundBrush = Brush.linearGradient(
+                    backgroundBrush = if (isDark) Brush.linearGradient(
                         colors = listOf(
                             Color(0xFF0284C7).copy(alpha = 0.35f),
                             Color(0xFF0F172A).copy(alpha = 0.60f)
                         )
+                    ) else Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFE0F2FE),
+                            Color(0xFFF3ECE0)
+                        )
                     ),
-                    borderBrush = Brush.linearGradient(
+                    borderBrush = if (isDark) Brush.linearGradient(
                         colors = listOf(
                             Color(0xFF38BDF8).copy(alpha = 0.7f),
                             Color.White.copy(alpha = 0.2f)
+                        )
+                    ) else Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF0284C7),
+                            Color(0xFF38BDF8)
                         )
                     ),
                     elevation = 6.dp,
@@ -170,13 +170,13 @@ fun AddOptionChoiceDialog(
                             Text(
                                 text = "افزودن زیر دسته",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White
+                                color = if (isDark) Color.White else Color(0xFF111827)
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "ایجاد پوشه و شاخه تودرتو جدید",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF93C5FD)
+                                color = if (isDark) Color(0xFF93C5FD) else Color(0xFF0369A1)
                             )
                         }
                     }
@@ -191,16 +191,26 @@ fun AddOptionChoiceDialog(
                         .height(84.dp)
                         .testTag("choose_item_option"),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundBrush = Brush.linearGradient(
+                    backgroundBrush = if (isDark) Brush.linearGradient(
                         colors = listOf(
                             Color(0xFF7C3AED).copy(alpha = 0.35f),
                             Color(0xFF0F172A).copy(alpha = 0.60f)
                         )
+                    ) else Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFEDE9FE),
+                            Color(0xFFF3ECE0)
+                        )
                     ),
-                    borderBrush = Brush.linearGradient(
+                    borderBrush = if (isDark) Brush.linearGradient(
                         colors = listOf(
                             Color(0xFFA78BFA).copy(alpha = 0.7f),
                             Color.White.copy(alpha = 0.2f)
+                        )
+                    ) else Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF7C3AED),
+                            Color(0xFFA78BFA)
                         )
                     ),
                     elevation = 6.dp,
@@ -242,13 +252,13 @@ fun AddOptionChoiceDialog(
                             Text(
                                 text = "افزودن آیتم",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White
+                                color = if (isDark) Color.White else Color(0xFF111827)
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "سایت، ایمیل، پسورد، پرامپت، کد یا یادداشت",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFFC4B5FD)
+                                color = if (isDark) Color(0xFFC4B5FD) else Color(0xFF6D28D9)
                             )
                         }
                     }

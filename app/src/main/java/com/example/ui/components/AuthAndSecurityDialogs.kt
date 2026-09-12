@@ -1429,6 +1429,7 @@ fun AppLockScreen(
 fun DeleteAllDataDialog(
     currentTheme: ThemeOption,
     expectedUsername: String,
+    isDark: Boolean = true,
     onConfirmDelete: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -1442,12 +1443,24 @@ fun DeleteAllDataDialog(
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(24.dp),
-            backgroundBrush = Brush.linearGradient(
-                listOf(Color(0xFF2A080C), Color(0xFF0F172A))
-            ),
-            borderBrush = Brush.linearGradient(
-                listOf(Color(0xFFEF4444), Color(0xFFF43F5E).copy(alpha = 0.5f))
-            )
+            backgroundBrush = if (isDark) {
+                Brush.linearGradient(
+                    listOf(Color(0xFF2A080C), Color(0xFF0F172A))
+                )
+            } else {
+                Brush.linearGradient(
+                    listOf(Color(0xFFFFFFFF), Color(0xFFFFF1F2))
+                )
+            },
+            borderBrush = if (isDark) {
+                Brush.linearGradient(
+                    listOf(Color(0xFFEF4444), Color(0xFFF43F5E).copy(alpha = 0.5f))
+                )
+            } else {
+                Brush.linearGradient(
+                    listOf(Color(0xFFEF4444), Color(0xFFFDA4AF))
+                )
+            }
         ) {
             Column(
                 modifier = Modifier
@@ -1475,7 +1488,7 @@ fun DeleteAllDataDialog(
                 Text(
                     text = "حذف کامل کلیه اطلاعات و حساب",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
+                    color = if (isDark) Color.White else Color(0xFF111827),
                     textAlign = TextAlign.Center
                 )
 
@@ -1484,7 +1497,7 @@ fun DeleteAllDataDialog(
                 Text(
                     text = "هشدار: تمامی دسته‌بندی‌ها، آیتم‌ها، رمزها و اطلاعات گاوصندوق شما برای همیشه پاک خواهد شد و قابل بازگشت نخواهد بود.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.85f),
+                    color = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF374151),
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
                 )
@@ -1494,7 +1507,7 @@ fun DeleteAllDataDialog(
                 Text(
                     text = "جهت تایید نهایی، عبارت «$confirmationTarget» را در کادر زیر وارد نمایید:",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color(0xFFFCA5A5),
+                    color = if (isDark) Color(0xFFFCA5A5) else Color(0xFFDC2626),
                     textAlign = TextAlign.Center
                 )
 
@@ -1509,13 +1522,13 @@ fun DeleteAllDataDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("delete_all_confirmation_input"),
-                    placeholder = { Text(confirmationTarget) },
+                    placeholder = { Text(confirmationTarget, color = if (isDark) Color.White.copy(alpha = 0.4f) else Color(0xFF9CA3AF)) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFFEF4444),
                         unfocusedBorderColor = Color(0xFFEF4444).copy(alpha = 0.5f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                        unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -1555,9 +1568,17 @@ fun DeleteAllDataDialog(
                     OutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                            brush = Brush.linearGradient(
+                                listOf(
+                                    if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFDCD5C9),
+                                    if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE5DECF)
+                                )
+                            )
+                        )
                     ) {
-                        Text("انصراف", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                        Text("انصراف", style = MaterialTheme.typography.labelSmall, color = if (isDark) Color.White else Color(0xFF111827))
                     }
                 }
             }

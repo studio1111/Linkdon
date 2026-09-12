@@ -80,7 +80,7 @@ fun GlassTopHeader(
                 backgroundBrush = GlassColors.getGlassButtonBrush(isDark),
                 borderBrush = GlassColors.getGlassBorderBrush(isDark),
                 elevation = 6.dp,
-                shadowColor = Color(0xFF06B6D4).copy(alpha = 0.35f),
+                shadowColor = if (isDark) Color(0xFF06B6D4).copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.08f),
                 onClick = onNavigateBack
             ) {
                 Box(
@@ -90,7 +90,7 @@ fun GlassTopHeader(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "بازگشت",
-                        tint = Color.White,
+                        tint = if (isDark) Color.White else Color(0xFF111827),
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -106,7 +106,7 @@ fun GlassTopHeader(
             backgroundBrush = GlassColors.getGlassButtonBrush(isDark),
             borderBrush = GlassColors.getGlassBorderBrush(isDark),
             elevation = 6.dp,
-            shadowColor = Color(0xFF8B5CF6).copy(alpha = 0.35f),
+            shadowColor = if (isDark) Color(0xFF8B5CF6).copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.08f),
             onClick = onOpenDrawer
         ) {
             Box(
@@ -116,7 +116,7 @@ fun GlassTopHeader(
                 Icon(
                     imageVector = Icons.Default.Menu,
                     contentDescription = "منوی کشویی",
-                    tint = Color.White,
+                    tint = if (isDark) Color.White else Color(0xFF111827),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -130,24 +130,44 @@ fun GlassTopHeader(
                 .height(48.dp)
                 .testTag("floating_search_header_bar"),
             shape = RoundedCornerShape(24.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = if (isDark) 0.16f else 0.40f),
-                    Color(0xFF38BDF8).copy(alpha = if (isDark) 0.18f else 0.25f),
-                    Color(0xFF818CF8).copy(alpha = if (isDark) 0.12f else 0.20f),
-                    Color.Black.copy(alpha = if (isDark) 0.30f else 0.05f)
+            backgroundBrush = if (isDark) {
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.16f),
+                        Color(0xFF38BDF8).copy(alpha = 0.18f),
+                        Color(0xFF818CF8).copy(alpha = 0.12f),
+                        Color.Black.copy(alpha = 0.30f)
+                    )
                 )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.75f),
-                    Color(0xFF38BDF8).copy(alpha = 0.6f),
-                    Color.White.copy(alpha = 0.25f)
+            } else {
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFFFFFFF),
+                        Color(0xFFFAF7F2),
+                        Color(0xFFF3EFE7)
+                    )
                 )
-            ),
+            },
+            borderBrush = if (isDark) {
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.75f),
+                        Color(0xFF38BDF8).copy(alpha = 0.6f),
+                        Color.White.copy(alpha = 0.25f)
+                    )
+                )
+            } else {
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFDCD5C9),
+                        Color(0xFF38BDF8).copy(alpha = 0.5f),
+                        Color(0xFFCCC4B6)
+                    )
+                )
+            },
             elevation = 8.dp,
-            shadowColor = Color(0xFF38BDF8).copy(alpha = 0.3f),
-            glowColor = Color(0xFF38BDF8).copy(alpha = 0.2f)
+            shadowColor = if (isDark) Color(0xFF38BDF8).copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.1f),
+            glowColor = if (isDark) Color(0xFF38BDF8).copy(alpha = 0.2f) else null
         ) {
             Row(
                 modifier = Modifier
@@ -182,7 +202,7 @@ fun GlassTopHeader(
                             fontWeight = FontWeight.Black,
                             letterSpacing = 0.5.sp
                         ),
-                        color = Color.White
+                        color = if (isDark) Color.White else Color(0xFF111827)
                     )
                 }
 
@@ -197,7 +217,7 @@ fun GlassTopHeader(
                         Text(
                             text = if (currentCategoryName != null) "جستجو در $currentCategoryName..." else "جستجو در آیتم‌ها، کارت‌ها...",
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                            color = Color.White.copy(alpha = 0.55f),
+                            color = if (isDark) Color.White.copy(alpha = 0.55f) else Color(0xFF6B7280),
                             maxLines = 1
                         )
                     }
@@ -211,7 +231,7 @@ fun GlassTopHeader(
                             .testTag("header_search_input"),
                         singleLine = true,
                         textStyle = TextStyle(
-                            color = Color.White,
+                            color = if (isDark) Color.White else Color(0xFF111827),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
                         ),
@@ -234,7 +254,7 @@ fun GlassTopHeader(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "پاک کردن جستجو",
-                            tint = Color.White.copy(alpha = 0.8f),
+                            tint = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF4B5563),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -245,14 +265,14 @@ fun GlassTopHeader(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.12f))
+                        .background(if (isDark) Color.White.copy(alpha = 0.12f) else Color(0xFFF3EFE7))
                         .clickable { searchFocusRequester.requestFocus() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "جستجو",
-                        tint = Color.White.copy(alpha = 0.95f),
+                        tint = if (isDark) Color.White.copy(alpha = 0.95f) else Color(0xFF111827),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -268,7 +288,7 @@ fun GlassTopHeader(
             backgroundBrush = GlassColors.getGlassButtonBrush(isDark),
             borderBrush = GlassColors.getGlassBorderBrush(isDark),
             elevation = 6.dp,
-            shadowColor = Color(0xFF38BDF8).copy(alpha = 0.35f),
+            shadowColor = if (isDark) Color(0xFF38BDF8).copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.08f),
             onClick = onToggleLayout
         ) {
             Box(
@@ -278,7 +298,7 @@ fun GlassTopHeader(
                 Icon(
                     imageVector = if (isGridLayout) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
                     contentDescription = if (isGridLayout) "نمایش لیستی" else "نمایش جدولی",
-                    tint = Color.White,
+                    tint = if (isDark) Color.White else Color(0xFF111827),
                     modifier = Modifier.size(22.dp)
                 )
             }

@@ -88,6 +88,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.data.model.FontOption
 import com.example.data.model.SortOption
 import com.example.data.model.ThemeOption
+import com.example.ui.theme.GlassColors
 
 @Composable
 fun RightDrawerMenu(
@@ -153,28 +154,50 @@ fun RightDrawerMenu(
         context.startActivity(shareIntent)
     }
 
+    val isDark = currentTheme.isDark
+
     Box(
         modifier = modifier
             .fillMaxHeight()
             .width(340.dp)
             .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF0F172A).copy(alpha = 0.98f),
-                        Color(0xFF1E293B).copy(alpha = 0.96f),
-                        currentTheme.startGradient.copy(alpha = 0.45f)
+                if (isDark) {
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF0F172A).copy(alpha = 0.98f),
+                            Color(0xFF1E293B).copy(alpha = 0.96f),
+                            currentTheme.startGradient.copy(alpha = 0.45f)
+                        )
                     )
-                )
+                } else {
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFFFFFF),
+                            Color(0xFFFBF9F5),
+                            Color(0xFFF4F0E8)
+                        )
+                    )
+                }
             )
             .border(
                 width = 1.2.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.4f),
-                        currentTheme.accentColor.copy(alpha = 0.35f),
-                        Color.White.copy(alpha = 0.05f)
+                brush = if (isDark) {
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.4f),
+                            currentTheme.accentColor.copy(alpha = 0.35f),
+                            Color.White.copy(alpha = 0.05f)
+                        )
                     )
-                ),
+                } else {
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFDCD5C9),
+                            currentTheme.accentColor.copy(alpha = 0.5f),
+                            Color(0xFFE5DECF)
+                        )
+                    )
+                },
                 shape = RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
             )
             .clip(RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp))
@@ -203,7 +226,7 @@ fun RightDrawerMenu(
                         Icon(
                             imageVector = Icons.Default.Palette,
                             contentDescription = null,
-                            tint = Color(0xFF0F172A),
+                            tint = if (isDark) Color(0xFF0F172A) else Color.White,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -211,7 +234,7 @@ fun RightDrawerMenu(
                     Text(
                         text = "تنظیمات لینکدون",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = if (isDark) Color.White else Color(0xFF111827)
                     )
                 }
 
@@ -222,7 +245,7 @@ fun RightDrawerMenu(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "بستن منو",
-                        tint = Color.White.copy(alpha = 0.85f)
+                        tint = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF374151)
                     )
                 }
             }
@@ -236,6 +259,7 @@ fun RightDrawerMenu(
                 icon = Icons.AutoMirrored.Filled.Sort,
                 accentColor = currentTheme.accentColor,
                 isExpanded = isSortExpanded,
+                isDark = isDark,
                 onToggle = { isSortExpanded = !isSortExpanded }
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -246,12 +270,12 @@ fun RightDrawerMenu(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (isSelected) currentTheme.accentColor.copy(alpha = 0.25f)
-                                    else Color.White.copy(alpha = 0.04f)
+                                    if (isSelected) currentTheme.accentColor.copy(alpha = if (isDark) 0.25f else 0.18f)
+                                    else (if (isDark) Color.White.copy(alpha = 0.04f) else Color(0xFFF3ECE0))
                                 )
                                 .border(
                                     width = if (isSelected) 1.dp else 0.5.dp,
-                                    color = if (isSelected) currentTheme.accentColor else Color.White.copy(alpha = 0.1f),
+                                    color = if (isSelected) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFDCD5C9)),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { onSelectSort(option) }
@@ -265,12 +289,12 @@ fun RightDrawerMenu(
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     ),
-                                    color = if (isSelected) Color.White else Color.White.copy(alpha = 0.85f)
+                                    color = if (isSelected) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF111827))
                                 )
                                 Text(
                                     text = option.description,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.55f)
+                                    color = if (isDark) Color.White.copy(alpha = 0.55f) else Color(0xFF4B5563)
                                 )
                             }
                             if (isSelected) {
@@ -295,6 +319,7 @@ fun RightDrawerMenu(
                 icon = Icons.AutoMirrored.Filled.FormatTextdirectionRToL,
                 accentColor = currentTheme.accentColor,
                 isExpanded = isLayoutExpanded,
+                isDark = isDark,
                 onToggle = { isLayoutExpanded = !isLayoutExpanded }
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -302,7 +327,7 @@ fun RightDrawerMenu(
                     Text(
                         text = "جهت چیدمان صفحه:",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.White.copy(alpha = 0.75f)
+                        color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF111827)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -314,12 +339,12 @@ fun RightDrawerMenu(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (isRtl) currentTheme.accentColor.copy(alpha = 0.28f)
-                                    else Color.White.copy(alpha = 0.05f)
+                                    if (isRtl) currentTheme.accentColor.copy(alpha = if (isDark) 0.28f else 0.20f)
+                                    else (if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0))
                                 )
                                 .border(
                                     width = if (isRtl) 1.2.dp else 0.5.dp,
-                                    color = if (isRtl) currentTheme.accentColor else Color.White.copy(alpha = 0.15f),
+                                    color = if (isRtl) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9)),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { onToggleRtl(true) }
@@ -330,7 +355,7 @@ fun RightDrawerMenu(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.FormatTextdirectionRToL,
                                 contentDescription = null,
-                                tint = if (isRtl) currentTheme.accentColor else Color.White.copy(alpha = 0.7f),
+                                tint = if (isRtl) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -339,7 +364,7 @@ fun RightDrawerMenu(
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = if (isRtl) FontWeight.Bold else FontWeight.Normal
                                 ),
-                                color = if (isRtl) Color.White else Color.White.copy(alpha = 0.7f)
+                                color = if (isRtl) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563))
                             )
                         }
 
@@ -349,12 +374,12 @@ fun RightDrawerMenu(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (!isRtl) currentTheme.accentColor.copy(alpha = 0.28f)
-                                    else Color.White.copy(alpha = 0.05f)
+                                    if (!isRtl) currentTheme.accentColor.copy(alpha = if (isDark) 0.28f else 0.20f)
+                                    else (if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0))
                                 )
                                 .border(
                                     width = if (!isRtl) 1.2.dp else 0.5.dp,
-                                    color = if (!isRtl) currentTheme.accentColor else Color.White.copy(alpha = 0.15f),
+                                    color = if (!isRtl) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9)),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { onToggleRtl(false) }
@@ -365,7 +390,7 @@ fun RightDrawerMenu(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.FormatTextdirectionLToR,
                                 contentDescription = null,
-                                tint = if (!isRtl) currentTheme.accentColor else Color.White.copy(alpha = 0.7f),
+                                tint = if (!isRtl) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -374,7 +399,7 @@ fun RightDrawerMenu(
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = if (!isRtl) FontWeight.Bold else FontWeight.Normal
                                 ),
-                                color = if (!isRtl) Color.White else Color.White.copy(alpha = 0.7f)
+                                color = if (!isRtl) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563))
                             )
                         }
                     }
@@ -384,7 +409,7 @@ fun RightDrawerMenu(
                     Text(
                         text = "نحوه نمایش آیتم‌ها:",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.White.copy(alpha = 0.75f)
+                        color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF111827)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -395,12 +420,12 @@ fun RightDrawerMenu(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (isGridLayout) currentTheme.accentColor.copy(alpha = 0.28f)
-                                    else Color.White.copy(alpha = 0.05f)
+                                    if (isGridLayout) currentTheme.accentColor.copy(alpha = if (isDark) 0.28f else 0.20f)
+                                    else (if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0))
                                 )
                                 .border(
                                     width = if (isGridLayout) 1.2.dp else 0.5.dp,
-                                    color = if (isGridLayout) currentTheme.accentColor else Color.White.copy(alpha = 0.15f),
+                                    color = if (isGridLayout) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9)),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { if (!isGridLayout) onToggleLayout() }
@@ -411,7 +436,7 @@ fun RightDrawerMenu(
                             Icon(
                                 imageVector = Icons.Default.GridView,
                                 contentDescription = null,
-                                tint = if (isGridLayout) currentTheme.accentColor else Color.White.copy(alpha = 0.7f),
+                                tint = if (isGridLayout) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -420,7 +445,7 @@ fun RightDrawerMenu(
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = if (isGridLayout) FontWeight.Bold else FontWeight.Normal
                                 ),
-                                color = if (isGridLayout) Color.White else Color.White.copy(alpha = 0.7f)
+                                color = if (isGridLayout) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563))
                             )
                         }
 
@@ -429,12 +454,12 @@ fun RightDrawerMenu(
                                 .weight(1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (!isGridLayout) currentTheme.accentColor.copy(alpha = 0.28f)
-                                    else Color.White.copy(alpha = 0.05f)
+                                    if (!isGridLayout) currentTheme.accentColor.copy(alpha = if (isDark) 0.28f else 0.20f)
+                                    else (if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0))
                                 )
                                 .border(
                                     width = if (!isGridLayout) 1.2.dp else 0.5.dp,
-                                    color = if (!isGridLayout) currentTheme.accentColor else Color.White.copy(alpha = 0.15f),
+                                    color = if (!isGridLayout) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9)),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { if (isGridLayout) onToggleLayout() }
@@ -445,7 +470,7 @@ fun RightDrawerMenu(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ViewList,
                                 contentDescription = null,
-                                tint = if (!isGridLayout) currentTheme.accentColor else Color.White.copy(alpha = 0.7f),
+                                tint = if (!isGridLayout) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -454,7 +479,7 @@ fun RightDrawerMenu(
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = if (!isGridLayout) FontWeight.Bold else FontWeight.Normal
                                 ),
-                                color = if (!isGridLayout) Color.White else Color.White.copy(alpha = 0.7f)
+                                color = if (!isGridLayout) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563))
                             )
                         }
                     }
@@ -470,6 +495,7 @@ fun RightDrawerMenu(
                 icon = Icons.Default.Palette,
                 accentColor = currentTheme.accentColor,
                 isExpanded = isThemeExpanded,
+                isDark = isDark,
                 onToggle = { isThemeExpanded = !isThemeExpanded }
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -486,12 +512,12 @@ fun RightDrawerMenu(
                                         .weight(1f)
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(
-                                            if (isSelected) theme.accentColor.copy(alpha = 0.35f)
-                                            else Color.White.copy(alpha = 0.05f)
+                                            if (isSelected) theme.accentColor.copy(alpha = if (isDark) 0.35f else 0.22f)
+                                            else (if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0))
                                         )
                                         .border(
                                             width = if (isSelected) 1.5.dp else 0.5.dp,
-                                            color = if (isSelected) theme.accentColor else Color.White.copy(alpha = 0.15f),
+                                            color = if (isSelected) theme.accentColor else (if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9)),
                                             shape = RoundedCornerShape(12.dp)
                                         )
                                         .clickable { onSelectTheme(theme) }
@@ -514,7 +540,7 @@ fun RightDrawerMenu(
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                         ),
-                                        color = if (isSelected) Color.White else Color.White.copy(alpha = 0.8f),
+                                        color = if (isSelected) (if (isDark) Color.White else Color(0xFF111827)) else (if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF374151)),
                                         maxLines = 1
                                     )
                                 }
@@ -533,13 +559,14 @@ fun RightDrawerMenu(
                 icon = Icons.Default.FormatSize,
                 accentColor = currentTheme.accentColor,
                 isExpanded = isFontExpanded,
+                isDark = isDark,
                 onToggle = { isFontExpanded = !isFontExpanded }
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         text = "اندازه متن (${(textScale * 100).toInt()}%):",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF111827)
                     )
                     Slider(
                         value = textScale,
@@ -549,7 +576,7 @@ fun RightDrawerMenu(
                         colors = SliderDefaults.colors(
                             thumbColor = currentTheme.accentColor,
                             activeTrackColor = currentTheme.accentColor,
-                            inactiveTrackColor = Color.White.copy(alpha = 0.2f)
+                            inactiveTrackColor = if (isDark) Color.White.copy(alpha = 0.2f) else Color(0xFFDCD5C9)
                         )
                     )
 
@@ -557,7 +584,7 @@ fun RightDrawerMenu(
                     Text(
                         text = "قلم و فونت برنامه:",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF111827)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -570,12 +597,12 @@ fun RightDrawerMenu(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(
-                                        if (isSelected) currentTheme.accentColor.copy(alpha = 0.3f)
-                                        else Color.White.copy(alpha = 0.05f)
+                                        if (isSelected) currentTheme.accentColor.copy(alpha = if (isDark) 0.3f else 0.20f)
+                                        else (if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0))
                                     )
                                     .border(
                                         width = if (isSelected) 1.2.dp else 0.5.dp,
-                                        color = if (isSelected) currentTheme.accentColor else Color.White.copy(alpha = 0.15f),
+                                        color = if (isSelected) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9)),
                                         shape = RoundedCornerShape(10.dp)
                                     )
                                     .clickable { onSelectFont(fontOption) }
@@ -587,7 +614,7 @@ fun RightDrawerMenu(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     ),
-                                    color = if (isSelected) Color.White else Color.White.copy(alpha = 0.75f)
+                                    color = if (isSelected) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF374151))
                                 )
                             }
                         }
@@ -604,6 +631,7 @@ fun RightDrawerMenu(
                 icon = Icons.Default.CloudUpload,
                 accentColor = currentTheme.accentColor,
                 isExpanded = isBackupExpanded,
+                isDark = isDark,
                 onToggle = { isBackupExpanded = !isBackupExpanded }
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -612,7 +640,12 @@ fun RightDrawerMenu(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         backgroundBrush = Brush.linearGradient(
-                            listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.03f))
+                            if (isDark) listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.03f))
+                            else listOf(Color(0xFFFFFFFF), Color(0xFFF3ECE0))
+                        ),
+                        borderBrush = Brush.linearGradient(
+                            if (isDark) listOf(Color.White.copy(alpha = 0.15f), Color.Transparent)
+                            else listOf(Color(0xFFDCD5C9), Color(0xFFE5DECF))
                         )
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
@@ -632,13 +665,13 @@ fun RightDrawerMenu(
                                     Text(
                                         text = if (userName.isNotBlank()) userName else if (isOfflineMode) "حالت ورود آفلاین" else "حساب ثبت نشده",
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = Color.White
+                                        color = if (isDark) Color.White else Color(0xFF111827)
                                     )
                                 }
                                 Text(
                                     text = if (appPin.isNotBlank()) "🔒 رمز فعال" else "بدون رمز",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = if (appPin.isNotBlank()) Color(0xFF34D399) else Color.White.copy(alpha = 0.6f)
+                                    color = if (appPin.isNotBlank()) (if (isDark) Color(0xFF34D399) else Color(0xFF059669)) else (if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF6B7280))
                                 )
                             }
                             if (userEmail.isNotBlank()) {
@@ -646,7 +679,7 @@ fun RightDrawerMenu(
                                 Text(
                                     text = userEmail,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.7f)
+                                    color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)
                                 )
                             }
                         }
@@ -657,10 +690,12 @@ fun RightDrawerMenu(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         backgroundBrush = Brush.linearGradient(
-                            listOf(Color(0xFF10B981).copy(alpha = 0.12f), Color(0xFF0F172A).copy(alpha = 0.4f))
+                            if (isDark) listOf(Color(0xFF10B981).copy(alpha = 0.12f), Color(0xFF0F172A).copy(alpha = 0.4f))
+                            else listOf(Color(0xFF10B981).copy(alpha = 0.12f), Color(0xFFF3ECE0))
                         ),
                         borderBrush = Brush.linearGradient(
-                            listOf(Color(0xFF10B981).copy(alpha = 0.35f), Color.Transparent)
+                            if (isDark) listOf(Color(0xFF10B981).copy(alpha = 0.35f), Color.Transparent)
+                            else listOf(Color(0xFF10B981).copy(alpha = 0.4f), Color(0xFFDCD5C9))
                         )
                     ) {
                         Column(
@@ -687,7 +722,7 @@ fun RightDrawerMenu(
                                     Text(
                                         text = if (isOfflineMode) "همگام‌سازی ابری: غیرفعال (آفلاین)" else "همگام‌سازی ابری Firebase:",
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = if (isOfflineMode) Color(0xFFFCA5A5) else Color(0xFF6EE7B7)
+                                        color = if (isOfflineMode) (if (isDark) Color(0xFFFCA5A5) else Color(0xFFDC2626)) else (if (isDark) Color(0xFF6EE7B7) else Color(0xFF059669))
                                     )
                                 }
                             }
@@ -697,7 +732,7 @@ fun RightDrawerMenu(
                                 Text(
                                     text = cloudSyncStatus,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.7f),
+                                    color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF374151),
                                     maxLines = 1
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -705,7 +740,7 @@ fun RightDrawerMenu(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFF10B981).copy(alpha = 0.18f))
+                                        .background(if (isDark) Color(0xFF10B981).copy(alpha = 0.18f) else Color(0xFF10B981).copy(alpha = 0.22f))
                                         .clickable { onSyncNow() }
                                         .padding(vertical = 6.dp, horizontal = 10.dp),
                                     horizontalArrangement = Arrangement.Center,
@@ -714,14 +749,14 @@ fun RightDrawerMenu(
                                     Icon(
                                         imageVector = Icons.Default.CloudSync,
                                         contentDescription = null,
-                                        tint = Color(0xFF6EE7B7),
+                                        tint = if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857),
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text = "همگام‌سازی دستی اکنون",
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = Color(0xFF6EE7B7)
+                                        color = if (isDark) Color(0xFF6EE7B7) else Color(0xFF047857)
                                     )
                                 }
                             }
@@ -733,14 +768,16 @@ fun RightDrawerMenu(
                         onClick = { showEditAccountDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = currentTheme.accentColor.copy(alpha = 0.35f))
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isDark) currentTheme.accentColor.copy(alpha = 0.35f) else currentTheme.accentColor.copy(alpha = 0.22f)
+                        )
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                        Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(16.dp), tint = if (isDark) Color.White else currentTheme.accentColor)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (userName.isNotBlank()) "ویرایش نام کاربری و ایمیل" else "احراز هویت با ایمیل و نام کاربری",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White
+                            color = if (isDark) Color.White else Color(0xFF111827)
                         )
                     }
 
@@ -749,7 +786,15 @@ fun RightDrawerMenu(
                         onClick = { showSetPinDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDark) Color.White else Color(0xFF111827)),
+                        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                            brush = Brush.linearGradient(
+                                listOf(
+                                    if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFDCD5C9),
+                                    if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE5DECF)
+                                )
+                            )
+                        )
                     ) {
                         Icon(
                             imageVector = if (appPin.isNotBlank()) Icons.Default.Lock else Icons.Default.Key,
@@ -798,7 +843,16 @@ fun RightDrawerMenu(
                                 }
                             },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDark) Color.White else Color(0xFF111827)),
+                            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                                brush = Brush.linearGradient(
+                                    listOf(
+                                        if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFDCD5C9),
+                                        if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE5DECF)
+                                    )
+                                )
+                            )
                         ) {
                             Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
@@ -812,7 +866,16 @@ fun RightDrawerMenu(
                                 showImportDialog = true
                             },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = if (isDark) Color.White else Color(0xFF111827)),
+                            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                                brush = Brush.linearGradient(
+                                    listOf(
+                                        if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFDCD5C9),
+                                        if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE5DECF)
+                                    )
+                                )
+                            )
                         ) {
                             Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
@@ -826,17 +889,17 @@ fun RightDrawerMenu(
                             onClick = { onLogout() },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFFCA5A5)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444)),
                             border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
                                 brush = Brush.linearGradient(
-                                    listOf(Color(0xFFEF4444).copy(alpha = 0.5f), Color(0xFFEF4444).copy(alpha = 0.2f))
+                                    listOf(Color(0xFFEF4444).copy(alpha = 0.6f), Color(0xFFEF4444).copy(alpha = 0.3f))
                                 )
                             )
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                                 contentDescription = "خروج از حساب",
-                                tint = Color(0xFFFCA5A5),
+                                tint = Color(0xFFEF4444),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -850,20 +913,20 @@ fun RightDrawerMenu(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFEF4444).copy(alpha = 0.25f)
+                            containerColor = Color(0xFFEF4444).copy(alpha = if (isDark) 0.25f else 0.18f)
                         )
                     ) {
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
                             contentDescription = "حذف کل اطلاعات",
-                            tint = Color(0xFFF87171),
+                            tint = if (isDark) Color(0xFFF87171) else Color(0xFFDC2626),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "حذف کل اطلاعات و بازنشانی",
                             style = MaterialTheme.typography.labelMedium,
-                            color = Color(0xFFFCA5A5)
+                            color = if (isDark) Color(0xFFFCA5A5) else Color(0xFFDC2626)
                         )
                     }
                 }
@@ -878,6 +941,7 @@ fun RightDrawerMenu(
                 icon = Icons.Default.Info,
                 accentColor = currentTheme.accentColor,
                 isExpanded = isStatsExpanded,
+                isDark = isDark,
                 onToggle = { isStatsExpanded = !isStatsExpanded }
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -885,21 +949,21 @@ fun RightDrawerMenu(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("تعداد کل دسته‌بندی‌ها:", color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
-                        Text("$categoryCount دسته", color = Color.White, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
+                        Text("تعداد کل دسته‌بندی‌ها:", color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563), style = MaterialTheme.typography.bodySmall)
+                        Text("$categoryCount دسته", color = if (isDark) Color.White else Color(0xFF111827), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("تعداد کل آیتم‌ها و حساب‌ها:", color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
+                        Text("تعداد کل آیتم‌ها و حساب‌ها:", color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563), style = MaterialTheme.typography.bodySmall)
                         Text("$itemCount آیتم", color = currentTheme.accentColor, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold))
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "لینکدون نسخه ۲.۰ • گاوصندوق هوشمند داده‌ها و پیوندها",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.White.copy(alpha = 0.45f),
+                        color = if (isDark) Color.White.copy(alpha = 0.45f) else Color(0xFF6B7280),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -918,9 +982,16 @@ fun RightDrawerMenu(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                backgroundBrush = Brush.linearGradient(
-                    listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                )
+                backgroundBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFFFFFFF), Color(0xFFF9F7F2)))
+                },
+                borderBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color.White.copy(alpha = 0.2f), Color.White.copy(alpha = 0.05f)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFDCD5C9), Color(0xFFE5DECF)))
+                }
             ) {
                 Column(
                     modifier = Modifier
@@ -931,7 +1002,7 @@ fun RightDrawerMenu(
                     Text(
                         text = "پشتیبان داده‌های لینکدون",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = if (isDark) Color.White else Color(0xFF111827)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
@@ -941,11 +1012,13 @@ fun RightDrawerMenu(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(180.dp),
-                        textStyle = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                        textStyle = MaterialTheme.typography.bodySmall.copy(color = if (isDark) Color.White else Color(0xFF111827)),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = currentTheme.accentColor,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f)
+                            unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFFDCD5C9),
+                            focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827)
                         )
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -970,9 +1043,17 @@ fun RightDrawerMenu(
                         OutlinedButton(
                             onClick = { showExportDialog = false },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                                brush = Brush.linearGradient(
+                                    listOf(
+                                        if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFDCD5C9),
+                                        if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE5DECF)
+                                    )
+                                )
+                            )
                         ) {
-                            AutoFitButtonText("بستن", color = Color.White)
+                            AutoFitButtonText("بستن", color = if (isDark) Color.White else Color(0xFF111827))
                         }
                     }
                 }
@@ -988,9 +1069,16 @@ fun RightDrawerMenu(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                backgroundBrush = Brush.linearGradient(
-                    listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                )
+                backgroundBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFFFFFFF), Color(0xFFF9F7F2)))
+                },
+                borderBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color.White.copy(alpha = 0.2f), Color.White.copy(alpha = 0.05f)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFDCD5C9), Color(0xFFE5DECF)))
+                }
             ) {
                 Column(
                     modifier = Modifier
@@ -1001,7 +1089,7 @@ fun RightDrawerMenu(
                     ExpandableAutoText(
                         text = "بازیابی اطلاعات از فایل JSON",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White,
+                        color = if (isDark) Color.White else Color(0xFF111827),
                         collapsedMaxLines = 1,
                         minFontSize = 12.sp
                     )
@@ -1012,19 +1100,21 @@ fun RightDrawerMenu(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(160.dp),
-                        placeholder = { Text("محتوای فایل JSON پشتیبان را اینجا جای‌گذاری کنید...") },
-                        textStyle = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                        placeholder = { Text("محتوای فایل JSON پشتیبان را اینجا جای‌گذاری کنید...", color = if (isDark) Color.White.copy(alpha = 0.5f) else Color(0xFF6B7280)) },
+                        textStyle = MaterialTheme.typography.bodySmall.copy(color = if (isDark) Color.White else Color(0xFF111827)),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = currentTheme.accentColor,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f)
+                            unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFFDCD5C9),
+                            focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827)
                         )
                     )
                     if (importStatusMessage != null) {
                         Spacer(modifier = Modifier.height(8.dp))
                         ExpandableAutoText(
                             text = importStatusMessage!!,
-                            color = Color(0xFF34D399),
+                            color = if (isDark) Color(0xFF34D399) else Color(0xFF059669),
                             style = MaterialTheme.typography.bodySmall,
                             collapsedMaxLines = 2,
                             minFontSize = 10.sp
@@ -1055,9 +1145,17 @@ fun RightDrawerMenu(
                         OutlinedButton(
                             onClick = { showImportDialog = false },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                                brush = Brush.linearGradient(
+                                    listOf(
+                                        if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFDCD5C9),
+                                        if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE5DECF)
+                                    )
+                                )
+                            )
                         ) {
-                            AutoFitButtonText("بستن", color = Color.White)
+                            AutoFitButtonText("بستن", color = if (isDark) Color.White else Color(0xFF111827))
                         }
                     }
                 }
@@ -1077,9 +1175,16 @@ fun RightDrawerMenu(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                backgroundBrush = Brush.linearGradient(
-                    listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                )
+                backgroundBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFFFFFFF), Color(0xFFF9F7F2)))
+                },
+                borderBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color.White.copy(alpha = 0.2f), Color.White.copy(alpha = 0.05f)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFDCD5C9), Color(0xFFE5DECF)))
+                }
             ) {
                 Column(
                     modifier = Modifier
@@ -1090,7 +1195,7 @@ fun RightDrawerMenu(
                     Text(
                         text = "احراز هویت و حساب اختصاصی",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = if (isDark) Color.White else Color(0xFF111827)
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     OutlinedTextField(
@@ -1105,9 +1210,11 @@ fun RightDrawerMenu(
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = currentTheme.accentColor,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFFDCD5C9),
+                            focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            focusedLabelColor = currentTheme.accentColor,
+                            unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -1124,9 +1231,11 @@ fun RightDrawerMenu(
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = currentTheme.accentColor,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFFDCD5C9),
+                            focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            focusedLabelColor = currentTheme.accentColor,
+                            unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -1164,9 +1273,17 @@ fun RightDrawerMenu(
                         OutlinedButton(
                             onClick = { showEditAccountDialog = false },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                                brush = Brush.linearGradient(
+                                    listOf(
+                                        if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFFDCD5C9),
+                                        if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFE5DECF)
+                                    )
+                                )
+                            )
                         ) {
-                            Text("انصراف", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                            Text("انصراف", color = if (isDark) Color.White else Color(0xFF111827), style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
@@ -1186,9 +1303,16 @@ fun RightDrawerMenu(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                backgroundBrush = Brush.linearGradient(
-                    listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                )
+                backgroundBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFFFFFFF), Color(0xFFF9F7F2)))
+                },
+                borderBrush = if (isDark) {
+                    Brush.linearGradient(listOf(Color.White.copy(alpha = 0.2f), Color.White.copy(alpha = 0.05f)))
+                } else {
+                    Brush.linearGradient(listOf(Color(0xFFDCD5C9), Color(0xFFE5DECF)))
+                }
             ) {
                 Column(
                     modifier = Modifier
@@ -1199,13 +1323,13 @@ fun RightDrawerMenu(
                     Text(
                         text = if (appPin.isNotBlank()) "تغییر یا حذف رمز ورود" else "تنظیم رمز عبور ۴ تا ۸ رقمی",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = Color.White
+                        color = if (isDark) Color.White else Color(0xFF111827)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "رمز عبور برای قفل گاوصندوق برنامه استفاده می‌شود.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.7f),
+                        color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(14.dp))
@@ -1223,9 +1347,11 @@ fun RightDrawerMenu(
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = currentTheme.accentColor,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFFDCD5C9),
+                            focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            focusedLabelColor = currentTheme.accentColor,
+                            unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -1244,9 +1370,11 @@ fun RightDrawerMenu(
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = currentTheme.accentColor,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFFDCD5C9),
+                            focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                            focusedLabelColor = currentTheme.accentColor,
+                            unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -1304,6 +1432,7 @@ fun RightDrawerMenu(
         DeleteAllDataDialog(
             currentTheme = currentTheme,
             expectedUsername = if (userName.isNotBlank()) userName else "حذف",
+            isDark = isDark,
             onConfirmDelete = {
                 onClearAllData()
                 showDeleteAllDialog = false
@@ -1322,6 +1451,7 @@ private fun DrawerCollapsibleSection(
     icon: ImageVector,
     accentColor: Color,
     isExpanded: Boolean,
+    isDark: Boolean = true,
     onToggle: () -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -1333,18 +1463,36 @@ private fun DrawerCollapsibleSection(
     GlassmorphicBox(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        backgroundBrush = Brush.linearGradient(
-            colors = listOf(
-                if (isExpanded) accentColor.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.05f),
-                Color(0xFF1E293B).copy(alpha = 0.6f)
+        backgroundBrush = if (isDark) {
+            Brush.linearGradient(
+                colors = listOf(
+                    if (isExpanded) accentColor.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.05f),
+                    Color(0xFF1E293B).copy(alpha = 0.6f)
+                )
             )
-        ),
-        borderBrush = Brush.linearGradient(
-            colors = listOf(
-                if (isExpanded) accentColor.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.2f),
-                Color.White.copy(alpha = 0.05f)
+        } else {
+            Brush.linearGradient(
+                colors = listOf(
+                    if (isExpanded) accentColor.copy(alpha = 0.15f) else Color(0xFFFFFFFF),
+                    if (isExpanded) Color(0xFFF0EAE0) else Color(0xFFF9F7F2)
+                )
             )
-        ),
+        },
+        borderBrush = if (isDark) {
+            Brush.linearGradient(
+                colors = listOf(
+                    if (isExpanded) accentColor.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.2f),
+                    Color.White.copy(alpha = 0.05f)
+                )
+            )
+        } else {
+            Brush.linearGradient(
+                colors = listOf(
+                    if (isExpanded) accentColor.copy(alpha = 0.75f) else Color(0xFFDCD5C9),
+                    Color(0xFFE5DECF)
+                )
+            )
+        },
         elevation = if (isExpanded) 6.dp else 2.dp,
         onClick = onToggle
     ) {
@@ -1368,15 +1516,15 @@ private fun DrawerCollapsibleSection(
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(
-                                if (isExpanded) accentColor.copy(alpha = 0.25f)
-                                else Color.White.copy(alpha = 0.08f)
+                                if (isExpanded) accentColor.copy(alpha = if (isDark) 0.25f else 0.20f)
+                                else (if (isDark) Color.White.copy(alpha = 0.08f) else Color(0xFFEFE9DC))
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = if (isExpanded) accentColor else Color.White.copy(alpha = 0.85f),
+                            tint = if (isExpanded) accentColor else (if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF374151)),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1385,14 +1533,14 @@ private fun DrawerCollapsibleSection(
                         ExpandableAutoText(
                             text = title,
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White,
+                            color = if (isDark) Color.White else Color(0xFF111827),
                             collapsedMaxLines = 1,
                             minFontSize = 11.sp
                         )
                         ExpandableAutoText(
                             text = subtitle,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (isExpanded) accentColor else Color.White.copy(alpha = 0.6f),
+                            color = if (isExpanded) accentColor else (if (isDark) Color.White.copy(alpha = 0.6f) else Color(0xFF4B5563)),
                             collapsedMaxLines = 1,
                             minFontSize = 9.sp
                         )
@@ -1402,7 +1550,7 @@ private fun DrawerCollapsibleSection(
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = if (isExpanded) "بستن بخش" else "باز کردن بخش",
-                    tint = if (isExpanded) accentColor else Color.White.copy(alpha = 0.7f),
+                    tint = if (isExpanded) accentColor else (if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563)),
                     modifier = Modifier
                         .size(22.dp)
                         .rotate(arrowRotation)

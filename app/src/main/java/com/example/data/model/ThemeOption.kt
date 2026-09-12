@@ -23,12 +23,12 @@ enum class ThemeOption(
     ),
     LIGHT(
         id = "LIGHT",
-        titleFa = "تم روشن شیشه‌ای",
+        titleFa = "سفید شیری مات",
         isDark = false,
-        previewColor = Color(0xFFE2E8F0),
-        startGradient = Color(0xFFE2E8F0),
-        endGradient = Color(0xFFF8FAFC),
-        accentColor = Color(0xFF2563EB)
+        previewColor = Color(0xFFFBF9F5),
+        startGradient = Color(0xFFFBF9F5),
+        endGradient = Color(0xFFF3EFE6),
+        accentColor = Color(0xFF1D4ED8)
     ),
     DARK_GREEN(
         id = "DARK_GREEN",

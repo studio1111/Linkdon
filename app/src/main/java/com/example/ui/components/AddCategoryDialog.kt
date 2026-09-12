@@ -39,6 +39,7 @@ fun AddCategoryDialog(
     initialRating: Float = 0f,
     title: String = "افزودن دسته جدید",
     buttonLabel: String = "ذخیره دسته",
+    isDark: Boolean = true,
     onConfirm: (name: String, colorHex: String, rating: Float) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -55,22 +56,10 @@ fun AddCategoryDialog(
                 .padding(12.dp)
                 .testTag("add_category_dialog"),
             shape = RoundedCornerShape(28.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF1E293B).copy(alpha = 0.95f),
-                    Color(0xFF0F172A).copy(alpha = 0.98f),
-                    colorItem.primaryColor.copy(alpha = 0.35f)
-                )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.7f),
-                    colorItem.secondaryColor.copy(alpha = 0.5f),
-                    Color.White.copy(alpha = 0.15f)
-                )
-            ),
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = colorItem.secondaryColor),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = colorItem.highlightColor),
             elevation = 16.dp,
-            shadowColor = colorItem.secondaryColor.copy(alpha = 0.5f)
+            shadowColor = if (isDark) colorItem.secondaryColor.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
         ) {
             Column(
                 modifier = Modifier
@@ -81,7 +70,7 @@ fun AddCategoryDialog(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
+                    color = if (isDark) Color.White else Color(0xFF111827),
                     textAlign = TextAlign.Center
                 )
 
@@ -106,13 +95,13 @@ fun AddCategoryDialog(
                         }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        focusedTextColor = if (isDark) Color.White else Color(0xFF111827),
+                        unfocusedTextColor = if (isDark) Color.White else Color(0xFF111827),
                         focusedBorderColor = colorItem.secondaryColor,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                        focusedLabelColor = colorItem.highlightColor,
-                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                        cursorColor = colorItem.highlightColor
+                        unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color(0xFF9CA3AF),
+                        focusedLabelColor = if (isDark) colorItem.highlightColor else colorItem.secondaryColor,
+                        unfocusedLabelColor = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
+                        cursorColor = if (isDark) colorItem.highlightColor else colorItem.secondaryColor
                     ),
                     shape = RoundedCornerShape(16.dp)
                 )
@@ -127,7 +116,7 @@ fun AddCategoryDialog(
                     Text(
                         text = "امتیاز و اولویت دسته‌بندی:",
                         style = MaterialTheme.typography.labelLarge,
-                        color = Color.White.copy(alpha = 0.85f)
+                        color = if (isDark) Color.White.copy(alpha = 0.85f) else Color(0xFF111827)
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(
@@ -137,7 +126,8 @@ fun AddCategoryDialog(
                         StarRatingBar(
                             rating = rating,
                             onRatingChanged = { rating = it },
-                            starSize = 18.dp
+                            starSize = 18.dp,
+                            isDark = isDark
                         )
                     }
                 }
@@ -146,6 +136,7 @@ fun AddCategoryDialog(
 
                 ColorPickerCarousel(
                     selectedHex = selectedColorHex,
+                    isDark = isDark,
                     onColorSelected = { selectedColorHex = it }
                 )
 
@@ -163,12 +154,12 @@ fun AddCategoryDialog(
                             .testTag("category_dialog_cancel_button"),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.White
+                            contentColor = if (isDark) Color.White else Color(0xFF374151)
                         )
                     ) {
                         AutoFitButtonText(
                             text = "انصراف",
-                            color = Color.White
+                            color = if (isDark) Color.White else Color(0xFF374151)
                         )
                     }
 

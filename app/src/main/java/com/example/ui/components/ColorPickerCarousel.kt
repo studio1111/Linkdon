@@ -42,6 +42,7 @@ import com.example.ui.theme.GlassColors
 fun ColorPickerCarousel(
     modifier: Modifier = Modifier,
     selectedHex: String,
+    isDark: Boolean = true,
     onColorSelected: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -60,12 +61,12 @@ fun ColorPickerCarousel(
             Text(
                 text = "انتخاب رنگ کارت (۱۶ رنگ شیشه‌ای):",
                 style = MaterialTheme.typography.titleSmall,
-                color = Color.White.copy(alpha = 0.9f)
+                color = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827)
             )
             Text(
                 text = selectedColorItem.nameFa,
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                color = selectedColorItem.highlightColor
+                color = if (isDark) selectedColorItem.highlightColor else selectedColorItem.secondaryColor
             )
         }
 
@@ -88,7 +89,11 @@ fun ColorPickerCarousel(
                     label = "color_bubble_size"
                 )
                 val animatedBorderColor by animateColorAsState(
-                    targetValue = if (isSelected) Color.White else Color.White.copy(alpha = 0.25f),
+                    targetValue = if (isSelected) {
+                        if (isDark) Color.White else Color(0xFF111827)
+                    } else {
+                        if (isDark) Color.White.copy(alpha = 0.25f) else Color(0xFF9CA3AF)
+                    },
                     animationSpec = tween(150),
                     label = "color_border"
                 )

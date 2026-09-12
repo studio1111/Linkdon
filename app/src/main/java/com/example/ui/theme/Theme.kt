@@ -26,18 +26,18 @@ private val LinkdoonDarkColorScheme = darkColorScheme(
 )
 
 private val LinkdoonLightColorScheme = lightColorScheme(
-    primary = Color(0xFF2563EB),
+    primary = Color(0xFF1D4ED8),
     onPrimary = Color.White,
     primaryContainer = Color(0xFFDBEAFE),
     onPrimaryContainer = Color(0xFF1E40AF),
-    secondary = Color(0xFF6366F1),
+    secondary = Color(0xFF4F46E5),
     onSecondary = Color.White,
-    background = Color(0xFFF8FAFC),
-    onBackground = Color(0xFF0F172A),
+    background = Color(0xFFFBF9F5),
+    onBackground = Color(0xFF111827),
     surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF0F172A),
-    surfaceVariant = Color(0xFFE2E8F0),
-    onSurfaceVariant = Color(0xFF334155),
+    onSurface = Color(0xFF111827),
+    surfaceVariant = Color(0xFFF3EFE7),
+    onSurfaceVariant = Color(0xFF374151),
     error = Color(0xFFDC2626),
     onError = Color.White
 )

@@ -101,7 +101,7 @@ fun VaultItemCard(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "تنظیمات آیتم",
-                            tint = Color.White.copy(alpha = 0.9f),
+                            tint = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827),
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -109,13 +109,13 @@ fun VaultItemCard(
                     DropdownMenu(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
-                        modifier = Modifier.background(Color(0xFF0F172A).copy(alpha = 0.95f))
+                        modifier = Modifier.background(if (isDark) Color(0xFF0F172A).copy(alpha = 0.95f) else Color(0xFFFFFFFF))
                     ) {
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     text = "ویرایش آیتم",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             },
@@ -131,7 +131,7 @@ fun VaultItemCard(
                             text = {
                                 Text(
                                     text = "انتقال به دسته دیگر",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             },
@@ -147,7 +147,7 @@ fun VaultItemCard(
                             text = {
                                 Text(
                                     text = "تغییر رنگ (۱۶ رنگ)",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             },
@@ -192,7 +192,7 @@ fun VaultItemCard(
                 ) {
                     // 1. Rating (first)
                     if (item.rating > 0f) {
-                        RatingBadge(rating = item.rating)
+                        RatingBadge(rating = item.rating, isDark = isDark)
                         Spacer(modifier = Modifier.height(6.dp))
                     }
 
@@ -229,7 +229,7 @@ fun VaultItemCard(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.3.sp
                         ),
-                        color = Color.White,
+                        color = if (isDark) Color.White else Color(0xFF111827),
                         textAlign = TextAlign.Center,
                         collapsedMaxLines = 2,
                         minFontSize = 10.sp
@@ -241,7 +241,7 @@ fun VaultItemCard(
                         Text(
                             text = item.description,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.75f),
+                            color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF4B5563),
                             textAlign = TextAlign.Center,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
@@ -254,7 +254,7 @@ fun VaultItemCard(
                     Text(
                         text = itemType.titleFa,
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorItem.highlightColor.copy(alpha = 0.9f),
+                        color = if (isDark) colorItem.highlightColor.copy(alpha = 0.9f) else colorItem.primaryColor,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -303,7 +303,7 @@ fun VaultItemCard(
                     Column(modifier = Modifier.weight(1f)) {
                         // 1. Rating (first)
                         if (item.rating > 0f) {
-                            RatingBadge(rating = item.rating)
+                            RatingBadge(rating = item.rating, isDark = isDark)
                             Spacer(modifier = Modifier.height(3.dp))
                         }
 
@@ -311,7 +311,7 @@ fun VaultItemCard(
                         ExpandableAutoText(
                             text = item.title,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White,
+                            color = if (isDark) Color.White else Color(0xFF111827),
                             collapsedMaxLines = 1,
                             minFontSize = 10.sp
                         )
@@ -322,7 +322,7 @@ fun VaultItemCard(
                             Text(
                                 text = item.description,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.White.copy(alpha = 0.7f),
+                                color = if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF4B5563),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -334,7 +334,7 @@ fun VaultItemCard(
                         Text(
                             text = itemType.titleFa,
                             style = MaterialTheme.typography.labelSmall,
-                            color = colorItem.highlightColor.copy(alpha = 0.9f),
+                            color = if (isDark) colorItem.highlightColor.copy(alpha = 0.9f) else colorItem.primaryColor,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -350,20 +350,20 @@ fun VaultItemCard(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "تنظیمات آیتم",
-                            tint = Color.White.copy(alpha = 0.9f)
+                            tint = if (isDark) Color.White.copy(alpha = 0.9f) else Color(0xFF111827)
                         )
                     }
 
                     DropdownMenu(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
-                        modifier = Modifier.background(Color(0xFF0F172A).copy(alpha = 0.95f))
+                        modifier = Modifier.background(if (isDark) Color(0xFF0F172A).copy(alpha = 0.95f) else Color(0xFFFFFFFF))
                     ) {
                         DropdownMenuItem(
                             text = {
                                 AutoFitButtonText(
                                     text = "ویرایش آیتم",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     targetFontSize = 13.sp
                                 )
                             },
@@ -379,7 +379,7 @@ fun VaultItemCard(
                             text = {
                                 AutoFitButtonText(
                                     text = "انتقال به دسته دیگر",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     targetFontSize = 13.sp
                                 )
                             },
@@ -395,7 +395,7 @@ fun VaultItemCard(
                             text = {
                                 AutoFitButtonText(
                                     text = "تغییر رنگ (۱۶ رنگ)",
-                                    color = Color.White,
+                                    color = if (isDark) Color.White else Color(0xFF111827),
                                     targetFontSize = 13.sp
                                 )
                             },

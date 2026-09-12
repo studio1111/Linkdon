@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.ui.theme.GlassColors
 
 @Composable
 fun GlassConfirmationDialog(
@@ -39,6 +40,7 @@ fun GlassConfirmationDialog(
     message: String = "این عملیات غیرقابل بازگشت است و تمامی محتویات داخل آن حذف خواهند شد.",
     confirmButtonText: String = "بله، حذف شود",
     cancelButtonText: String = "انصراف",
+    isDark: Boolean = true,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -49,22 +51,10 @@ fun GlassConfirmationDialog(
                 .padding(16.dp)
                 .testTag("delete_confirmation_dialog"),
             shape = RoundedCornerShape(28.dp),
-            backgroundBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF1E293B).copy(alpha = 0.92f),
-                    Color(0xFF0F172A).copy(alpha = 0.95f),
-                    Color(0xFF450A0A).copy(alpha = 0.40f)
-                )
-            ),
-            borderBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFFEF4444).copy(alpha = 0.6f),
-                    Color.White.copy(alpha = 0.3f),
-                    Color(0xFFEF4444).copy(alpha = 0.1f)
-                )
-            ),
+            backgroundBrush = GlassColors.getOpaqueDialogBrush(isDark = isDark, accentColor = Color(0xFFEF4444)),
+            borderBrush = GlassColors.getOpaqueBorderBrush(isDark = isDark, accentColor = Color(0xFFEF4444)),
             elevation = 16.dp,
-            shadowColor = Color(0xFFEF4444).copy(alpha = 0.4f)
+            shadowColor = if (isDark) Color(0xFFEF4444).copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.12f)
         ) {
             Column(
                 modifier = Modifier
@@ -101,7 +91,7 @@ fun GlassConfirmationDialog(
                 ExpandableAutoText(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
+                    color = if (isDark) Color.White else Color(0xFF111827),
                     textAlign = TextAlign.Center,
                     collapsedMaxLines = 2,
                     minFontSize = 12.sp
@@ -112,7 +102,7 @@ fun GlassConfirmationDialog(
                 ExpandableAutoText(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.75f),
+                    color = if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF4B5563),
                     textAlign = TextAlign.Center,
                     collapsedMaxLines = 3,
                     minFontSize = 11.sp
@@ -132,12 +122,12 @@ fun GlassConfirmationDialog(
                             .testTag("dialog_cancel_button"),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.White
+                            contentColor = if (isDark) Color.White else Color(0xFF374151)
                         )
                     ) {
                         AutoFitButtonText(
                             text = cancelButtonText,
-                            color = Color.White
+                            color = if (isDark) Color.White else Color(0xFF374151)
                         )
                     }
 
