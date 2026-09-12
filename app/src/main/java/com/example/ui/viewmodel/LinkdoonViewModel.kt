@@ -173,19 +173,18 @@ class LinkdoonViewModel(application: Application) : AndroidViewModel(application
      * Recover Username and Password using registered Email from Cloud/Firebase.
      */
     fun recoverCredentials(
-        email: String,
-        onResult: (Boolean, String, String?) -> Unit
-    ) {
-        viewModelScope.launch {
-            val recoverResult = cloudService.recoverCredentialsByEmail(email)
-            if (recoverResult.isSuccess) {
-                val profile = recoverResult.getOrThrow()
-                onResult(true, "نام کاربری: ${profile.username}\nرمز عبور: ${profile.password}", profile.password)
-            } else {
-                onResult(false, recoverResult.exceptionOrNull()?.message ?: "حسابی با این ایمیل یافت نشد", null)
-            }
+    email: String,
+    onResult: (Boolean, String, String?) -> Unit
+) {
+    viewModelScope.launch {
+        val recoverResult = cloudService.recoverCredentialsByEmail(email)
+        if (recoverResult.isSuccess) {
+            onResult(true, "لینک بازیابی رمز عبور به ایمیل شما ارسال شد", null)
+        } else {
+            onResult(false, recoverResult.exceptionOrNull()?.message ?: "خطا در ارسال ایمیل بازیابی", null)
         }
     }
+}
 
     /**
      * Log out of current account.
