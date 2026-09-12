@@ -1,25 +1,28 @@
 package com.example.data.cloud
 
-import android.content.Context
-import android.content.SharedPreferences
 import com.example.data.local.CategoryDao
 import com.example.data.local.VaultItemDao
 import com.example.data.model.CategoryEntity
 import com.example.data.model.VaultItemEntity
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 /**
  * Account credentials model stored in Cloud/Firebase storage.
  * Enables full account recovery of username & password by email.
+ *
+ * NOTE: Storing raw passwords in Firestore is not secure. Prefer using
+ * Firebase Authentication (email/password) instead of storing passwords
+ * yourself. This class keeps the same shape as before to avoid breaking
+ * the rest of the app, but consider migrating to FirebaseAuth later.
  */
 data class CloudUserProfile(
-    val username: String,
-    val email: String,
-    val password: String,
+    val username: String = "",
+    val email: String = "",
+    val password: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -27,11 +30,11 @@ data class CloudUserProfile(
  * Snapshot of vault data stored for each cloud account.
  */
 data class CloudVaultBackup(
-    val email: String,
-    val username: String,
-    val updatedAt: Long,
-    val categories: List<CategoryEntity>,
-    val items: List<VaultItemEntity>
+    val email: String = "",
+    val username: String = "",
+    val updatedAt: Long = 0L,
+    val categories: List<CategoryEntity> = emptyList(),
+    val items: List<VaultItemEntity> = emptyList()
 )
 
 /**
@@ -47,72 +50,52 @@ data class SyncResult(
 )
 
 /**
- * Firebase Cloud Service:
+ * Firebase Cloud Service (real Firestore-backed version):
  * 1. Synchronizes user accounts & credentials (username, email, password).
  * 2. Provides email-based recovery for forgotten username and password.
  * 3. Auto-saves and exports cloud backups on every change.
  * 4. Auto-restores on login with strict deduplication to prevent duplicate items and categories.
  */
-class FirebaseCloudService(private val context: Context) {
+class FirebaseCloudService {
 
-    private val cloudPrefs: SharedPreferences =
-        context.getSharedPreferences("firebase_cloud_vault_store", Context.MODE_PRIVATE)
-
-    private val moshi: Moshi = Moshi.Builder()
-        .addLast(KotlinJsonAdapterFactory())
-        .build()
-
-    private val userAdapter = moshi.adapter(CloudUserProfile::class.java)
-    private val vaultAdapter = moshi.adapter(CloudVaultBackup::class.java)
-    private val userListType = Types.newParameterizedType(List::class.java, CloudUserProfile::class.java)
-    private val usersListAdapter = moshi.adapter<List<CloudUserProfile>>(userListType)
+    private val db = FirebaseFirestore.getInstance()
+    private val usersCollection = db.collection("users")
+    private val vaultsCollection = db.collection("vaults")
 
     /**
-     * Get all registered cloud accounts.
-     */
-    private fun getAllCloudUsers(): List<CloudUserProfile> {
-        val json = cloudPrefs.getString(KEY_ALL_USERS, null) ?: return emptyList()
-        return try {
-            usersListAdapter.fromJson(json) ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    /**
-     * Save/Update user profile in Cloud/Firebase registry.
+     * Save/Update user profile in Firestore ("users" collection).
+     * Document ID = normalized email, so lookups are O(1) and unambiguous.
      */
     suspend fun registerOrUpdateUser(
         username: String,
         email: String,
         password: String
     ): Result<CloudUserProfile> = withContext(Dispatchers.IO) {
-        val cleanUser = username.trim()
-        val cleanEmail = email.trim().lowercase()
-        val cleanPass = password.trim()
+        try {
+            val cleanEmail = email.trim().lowercase()
+            val cleanUser = username.trim()
+            val cleanPass = password.trim()
 
-        val allUsers = getAllCloudUsers().toMutableList()
-        val existingIndex = allUsers.indexOfFirst { it.email.equals(cleanEmail, ignoreCase = true) }
+            val docRef = usersCollection.document(cleanEmail)
+            val existingSnap = docRef.get().await()
+            val createdAt = if (existingSnap.exists()) {
+                existingSnap.getLong("createdAt") ?: System.currentTimeMillis()
+            } else {
+                System.currentTimeMillis()
+            }
 
-        val profile = CloudUserProfile(
-            username = cleanUser,
-            email = cleanEmail,
-            password = cleanPass,
-            createdAt = if (existingIndex >= 0) allUsers[existingIndex].createdAt else System.currentTimeMillis()
-        )
+            val profile = CloudUserProfile(
+                username = cleanUser,
+                email = cleanEmail,
+                password = cleanPass,
+                createdAt = createdAt
+            )
 
-        if (existingIndex >= 0) {
-            allUsers[existingIndex] = profile
-        } else {
-            allUsers.add(profile)
+            docRef.set(profile, SetOptions.merge()).await()
+            Result.success(profile)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-
-        cloudPrefs.edit()
-            .putString(KEY_ALL_USERS, usersListAdapter.toJson(allUsers))
-            .putString("user_profile_$cleanEmail", userAdapter.toJson(profile))
-            .apply()
-
-        Result.success(profile)
     }
 
     /**
@@ -122,34 +105,52 @@ class FirebaseCloudService(private val context: Context) {
         email: String,
         password: String
     ): Result<CloudUserProfile> = withContext(Dispatchers.IO) {
-        val cleanEmail = email.trim().lowercase()
-        val cleanPass = password.trim()
+        try {
+            val cleanEmail = email.trim().lowercase()
+            val cleanPass = password.trim()
 
-        val allUsers = getAllCloudUsers()
-        val user = allUsers.find { it.email.equals(cleanEmail, ignoreCase = true) }
-            ?: return@withContext Result.failure(Exception("حسابی با این آدرس ایمیل یافت نشد"))
+            val snap = usersCollection.document(cleanEmail).get().await()
+            if (!snap.exists()) {
+                return@withContext Result.failure(Exception("حسابی با این آدرس ایمیل یافت نشد"))
+            }
 
-        if (user.password != cleanPass) {
-            return@withContext Result.failure(Exception("رمز عبور وارد شده نادرست است"))
+            val user = snap.toObject(CloudUserProfile::class.java)
+                ?: return@withContext Result.failure(Exception("خطا در خواندن اطلاعات حساب"))
+
+            if (user.password != cleanPass) {
+                return@withContext Result.failure(Exception("رمز عبور وارد شده نادرست است"))
+            }
+
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-
-        Result.success(user)
     }
 
     /**
      * Recover Username and Password using registered Email.
      */
     suspend fun recoverCredentialsByEmail(email: String): Result<CloudUserProfile> = withContext(Dispatchers.IO) {
-        val cleanEmail = email.trim().lowercase()
-        val allUsers = getAllCloudUsers()
-        val user = allUsers.find { it.email.equals(cleanEmail, ignoreCase = true) }
-            ?: return@withContext Result.failure(Exception("حسابی با ایمیل $cleanEmail ثبت نشده است"))
+        try {
+            val cleanEmail = email.trim().lowercase()
+            val snap = usersCollection.document(cleanEmail).get().await()
 
-        Result.success(user)
+            if (!snap.exists()) {
+                return@withContext Result.failure(Exception("حسابی با ایمیل $cleanEmail ثبت نشده است"))
+            }
+
+            val user = snap.toObject(CloudUserProfile::class.java)
+                ?: return@withContext Result.failure(Exception("خطا در خواندن اطلاعات حساب"))
+
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     /**
      * Auto-save / Auto-backup vault data to Cloud whenever changes occur.
+     * Stored in the "vaults" collection, document ID = normalized email.
      */
     suspend fun autoSaveVaultToCloud(
         email: String,
@@ -158,31 +159,31 @@ class FirebaseCloudService(private val context: Context) {
         items: List<VaultItemEntity>
     ) = withContext(Dispatchers.IO) {
         if (email.isBlank()) return@withContext
-        val cleanEmail = email.trim().lowercase()
-
-        val backup = CloudVaultBackup(
-            email = cleanEmail,
-            username = username.trim(),
-            updatedAt = System.currentTimeMillis(),
-            categories = categories,
-            items = items
-        )
-
-        val json = vaultAdapter.toJson(backup)
-        cloudPrefs.edit()
-            .putString("cloud_vault_$cleanEmail", json)
-            .putLong("cloud_vault_timestamp_$cleanEmail", backup.updatedAt)
-            .apply()
+        try {
+            val cleanEmail = email.trim().lowercase()
+            val backup = CloudVaultBackup(
+                email = cleanEmail,
+                username = username.trim(),
+                updatedAt = System.currentTimeMillis(),
+                categories = categories,
+                items = items
+            )
+            vaultsCollection.document(cleanEmail).set(backup).await()
+        } catch (e: Exception) {
+            // Swallow to keep auto-save best-effort like the original,
+            // but you may want to log this via Crashlytics/Log.e in production.
+        }
     }
 
     /**
      * Get cloud backup for a user.
      */
     suspend fun fetchCloudVault(email: String): CloudVaultBackup? = withContext(Dispatchers.IO) {
-        val cleanEmail = email.trim().lowercase()
-        val json = cloudPrefs.getString("cloud_vault_$cleanEmail", null) ?: return@withContext null
         try {
-            vaultAdapter.fromJson(json)
+            val cleanEmail = email.trim().lowercase()
+            val snap = vaultsCollection.document(cleanEmail).get().await()
+            if (!snap.exists()) return@withContext null
+            snap.toObject(CloudVaultBackup::class.java)
         } catch (e: Exception) {
             null
         }
@@ -291,9 +292,5 @@ class FirebaseCloudService(private val context: Context) {
             itemsUpdated = itemsUpdated,
             message = "بازیابی ابری با موفقیت انجام شد (بدون ایجاد داده تکراری)"
         )
-    }
-
-    companion object {
-        private const val KEY_ALL_USERS = "all_registered_cloud_users"
     }
 }
