@@ -2,17 +2,19 @@ package com.example.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.data.model.FontOption
 
 /**
- * Standard, fixed type scale. The user-adjustable text scale is ignored:
- * [textScale] is kept only so existing call sites still compile.
+ * Standard, fixed typography: default font family and fixed sizes.
+ * The user-selectable font and text scale are no longer applied;
+ * [fontOption] and [textScale] are kept only so existing call sites still compile.
  */
 @Suppress("UNUSED_PARAMETER")
 fun createLinkdoonTypography(fontOption: FontOption, textScale: Float = 1.0f): Typography {
-    val family = fontOption.fontFamily
+    val family = FontFamily.Default
     return Typography(
         displayLarge = TextStyle(
             fontFamily = family,
