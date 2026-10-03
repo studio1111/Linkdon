@@ -9,12 +9,10 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -27,11 +25,11 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
 /**
- * An intelligent Text composable that:
- * 1. Automatically reduces its font size (down to [minFontSize]) to fit available space without truncation.
- * 2. If the text is still longer than [collapsedMaxLines], tapping on it expands smoothly to reveal all text.
- * 3. Tapping again collapses it back to [collapsedMaxLines].
+ * Text with tap-to-expand. Automatic font-size shrinking has been removed:
+ * the font size is exactly what the caller/style specifies.
+ * [minFontSize] is kept only for source compatibility and is ignored.
  */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun ExpandableAutoText(
     text: String,
@@ -51,23 +49,13 @@ fun ExpandableAutoText(
     style: TextStyle = LocalTextStyle.current
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    var hasVisualOverflow by remember { mutableStateOf(false) }
-
-    // Start with the provided or style font size
-    val baseFontSize = if (fontSize != TextUnit.Unspecified) fontSize else (style.fontSize.takeIf { it != TextUnit.Unspecified } ?: 14.sp)
-    var currentFontSize by remember(text, baseFontSize) { mutableStateOf(baseFontSize) }
-    var readyToDraw by remember(text, baseFontSize) { mutableStateOf(false) }
 
     val clickModifier = if (enableTapToExpand) {
         Modifier.clickable(
             interactionSource = remember { MutableInteractionSource() },
             indication = null
-        ) {
-            isExpanded = !isExpanded
-        }
-    } else {
-        Modifier
-    }
+        ) { isExpanded = !isExpanded }
+    } else Modifier
 
     Box(
         modifier = modifier
@@ -77,7 +65,7 @@ fun ExpandableAutoText(
         Text(
             text = text,
             color = color,
-            fontSize = if (isExpanded) baseFontSize else currentFontSize,
+            fontSize = fontSize,
             fontStyle = fontStyle,
             fontWeight = fontWeight,
             fontFamily = fontFamily,
@@ -88,38 +76,16 @@ fun ExpandableAutoText(
             maxLines = if (isExpanded) Int.MAX_VALUE else collapsedMaxLines,
             overflow = if (isExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
             softWrap = true,
-            style = style,
-            onTextLayout = { textLayoutResult ->
-                if (!isExpanded) {
-                    val didOverflow = textLayoutResult.hasVisualOverflow
-                    hasVisualOverflow = didOverflow
-                    if (didOverflow && currentFontSize.value > minFontSize.value) {
-                        // Automatically downscale font size smoothly to fit
-                        val nextSize = (currentFontSize.value - 1f).coerceAtLeast(minFontSize.value).sp
-                        if (nextSize != currentFontSize) {
-                            currentFontSize = nextSize
-                        }
-                    } else {
-                        readyToDraw = true
-                    }
-                } else {
-                    readyToDraw = true
-                }
-            },
-            modifier = Modifier.drawWithContent {
-                if (readyToDraw) {
-                    drawContent()
-                }
-            }
+            style = style
         )
     }
 }
 
 /**
- * Text composable specially designed for Buttons, Chips, and compact Action Bars.
- * Scales down font size gracefully so labels never get cut off abruptly,
- * and if tapped expands or allows multiline wrap.
+ * Plain button/chip label with a fixed font size ([targetFontSize]).
+ * Automatic shrinking has been removed; [minFontSize] is ignored.
  */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun AutoFitButtonText(
     text: String,
@@ -132,30 +98,16 @@ fun AutoFitButtonText(
     maxLines: Int = 1,
     style: TextStyle = LocalTextStyle.current
 ) {
-    var currentFontSize by remember(text, targetFontSize) { mutableStateOf(targetFontSize) }
-    var readyToDraw by remember(text, targetFontSize) { mutableStateOf(false) }
-
     Text(
         text = text,
         color = color,
-        fontSize = currentFontSize,
+        fontSize = targetFontSize,
         fontWeight = fontWeight,
         textAlign = textAlign,
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
         softWrap = true,
         style = style,
-        onTextLayout = { layoutResult ->
-            if (layoutResult.hasVisualOverflow && currentFontSize.value > minFontSize.value) {
-                currentFontSize = (currentFontSize.value - 0.75f).coerceAtLeast(minFontSize.value).sp
-            } else {
-                readyToDraw = true
-            }
-        },
-        modifier = modifier.drawWithContent {
-            if (readyToDraw) {
-                drawContent()
-            }
-        }
+        modifier = modifier
     )
 }
