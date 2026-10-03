@@ -42,7 +42,6 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -62,8 +61,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -90,6 +87,7 @@ import com.example.data.model.SortOption
 import com.example.data.model.ThemeOption
 import com.example.ui.theme.GlassColors
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun RightDrawerMenu(
     modifier: Modifier = Modifier,
@@ -139,7 +137,6 @@ fun RightDrawerMenu(
     var isSortExpanded by remember { mutableStateOf(true) }
     var isLayoutExpanded by remember { mutableStateOf(false) }
     var isThemeExpanded by remember { mutableStateOf(false) }
-    var isFontExpanded by remember { mutableStateOf(false) }
     var isBackupExpanded by remember { mutableStateOf(false) }
     var isStatsExpanded by remember { mutableStateOf(false) }
 
@@ -552,79 +549,7 @@ fun RightDrawerMenu(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // SECTION 4: فونت و اندازه متن (Typography & Font Size)
-            DrawerCollapsibleSection(
-                title = "فونت و اندازه متن",
-                subtitle = "${(textScale * 100).toInt()}% - ${currentFont.titleFa}",
-                icon = Icons.Default.FormatSize,
-                accentColor = currentTheme.accentColor,
-                isExpanded = isFontExpanded,
-                isDark = isDark,
-                onToggle = { isFontExpanded = !isFontExpanded }
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = "اندازه متن (${(textScale * 100).toInt()}%):",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF111827)
-                    )
-                    Slider(
-                        value = textScale,
-                        onValueChange = onTextScaleChange,
-                        valueRange = 0.80f..1.35f,
-                        steps = 5,
-                        colors = SliderDefaults.colors(
-                            thumbColor = currentTheme.accentColor,
-                            activeTrackColor = currentTheme.accentColor,
-                            inactiveTrackColor = if (isDark) Color.White.copy(alpha = 0.2f) else Color(0xFFDCD5C9)
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "قلم و فونت برنامه:",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isDark) Color.White.copy(alpha = 0.8f) else Color(0xFF111827)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FontOption.entries.forEach { fontOption ->
-                            val isSelected = fontOption == currentFont
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        if (isSelected) currentTheme.accentColor.copy(alpha = if (isDark) 0.3f else 0.20f)
-                                        else (if (isDark) Color.White.copy(alpha = 0.05f) else Color(0xFFF3ECE0))
-                                    )
-                                    .border(
-                                        width = if (isSelected) 1.2.dp else 0.5.dp,
-                                        color = if (isSelected) currentTheme.accentColor else (if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFDCD5C9)),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )
-                                    .clickable { onSelectFont(fontOption) }
-                                    .padding(vertical = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = fontOption.titleFa,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                    ),
-                                    color = if (isSelected) (if (isDark) Color.White else currentTheme.accentColor) else (if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF374151))
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // SECTION 5: پشتیبان‌گیری، امنیت و مدیریت داده‌ها
+            // SECTION 4: پشتیبان‌گیری، امنیت و مدیریت داده‌ها
             DrawerCollapsibleSection(
                 title = "پشتیبان‌گیری، امنیت و حساب",
                 subtitle = if (userName.isNotBlank()) "کاربر: $userName" else if (isOfflineMode) "حالت آفلاین" else "گوگل درایو و امنیت",
@@ -934,7 +859,7 @@ fun RightDrawerMenu(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // SECTION 6: آمار و درباره لینکدون (Stats & About)
+            // SECTION 5: آمار و درباره لینکدون (Stats & About)
             DrawerCollapsibleSection(
                 title = "اطلاعات و آمار لینکدون",
                 subtitle = "$categoryCount دسته | $itemCount آیتم",
